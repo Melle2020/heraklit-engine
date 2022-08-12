@@ -1,5 +1,13 @@
 {
   "devDependencies": {
+    "@types/node": "^18.7.2",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.4.0",
     "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "graphviz": "^0.0.9",
+    "render-dot": "^0.0.7",
+    "ts-graphviz": "^0.16.0"
   }
 }
