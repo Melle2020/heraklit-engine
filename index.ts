@@ -3,6 +3,9 @@ import fs from 'fs'
 const g = digraph('G');
 const data = fs.readFileSync('logicLanguage.txt', 'utf8')
 
+const symbolTable = new Map();
+
+
 const lines = data.toString().replace(/\r\n/g,'\n').split('\n');
 for (const line of lines) {
     const openBracePos = line.indexOf('(');
@@ -13,20 +16,73 @@ for (const line of lines) {
     const params = line.substring(openBracePos + 1, closeBracePos)
     const words = params.split(',')
 
+    const name = words[0].trim()
     if (relName === 'Place') {
-        g.node(words[0])
+        symbolTable.set(name, {
+            _id: name,
+            _type: 'Place',
+            values: []
+        })
     }
     else if (relName === 'Transition') {
-        g.node(words[0], {[attribute.shape]: 'box'})
+        symbolTable.set(name, {
+            _id: name,
+            _type: 'Transition',
+            inFlows: [],
+            outFlows: []
+        })
     }
-    else if (relName === 'Flow')
-    {
-        g.edge([words[0],words[1]])
+}
+
+// second run, add flows
+for (const line of lines) {
+    const openBracePos = line.indexOf('(');
+    const closeBracePos = line.indexOf(')');
+    const relName = line.substring(0, openBracePos);
+    console.log(relName)
+
+    const params = line.substring(openBracePos + 1, closeBracePos)
+    const words = params.split(',')
+
+    if (relName === 'Flow') {
+        const srcName = words[0].trim()
+        const tgtName = words[1].trim()
+        const srcObj = symbolTable.get(srcName);
+        const tgtObj = symbolTable.get(tgtName);
+
+        if (srcObj['_type'] === "Place") {
+            tgtObj["inFlows"].push(srcName);
+        } else if (srcObj["_type"] === "Transition") {
+            srcObj["outFlows"].push(tgtName);
+        }
+
     }
-    console.log(words[0])
 
 }
 
+// third run, add values
+for (const line of lines) {
+    const openBracePos = line.indexOf('(');
+    const closeBracePos = line.indexOf(')');
+    const relName = line.substring(0, openBracePos).trim();
+
+    const place = symbolTable.get(relName);
+    if ( place && place['_type'] === 'Place') {
+        // found a value for the place
+        const params = line.substring(openBracePos + 1, closeBracePos)
+        const words = params.split(',')
+        for (const word of words) {
+            place["values"].push(word)
+        }
+    }
+
+
+
+    const params = line.substring(openBracePos + 1, closeBracePos)
+    const words = params.split(',')
+
+
+}
 
 
 

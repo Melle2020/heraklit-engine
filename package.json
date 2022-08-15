@@ -1,4 +1,12 @@
 {
+  "main": "build/index.js",
+  "scripts": {
+    "build": "rimraf ./build && tsc",
+    "dev": "nodemon",
+    "start": "npm run build && node build/index.js",
+    "ts-start": "ts-node index.ts"
+  },
+
   "devDependencies": {
     "@types/node": "^18.7.2",
     "ts-node": "^10.9.1",
