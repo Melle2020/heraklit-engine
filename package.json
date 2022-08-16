@@ -1,13 +1,16 @@
 {
-  "scripts": {
-    "start": "ts-node src/index.ts"
-  },
-  "main": "src/index.ts",
-  "devDependencies": {
-    "typescript": "^4.7.4"
-  },
-  "dependencies": {
-    "fs": "^0.0.1-security",
-    "ts-node": "^10.9.1"
-  }
+    "scripts": {
+        "start": "ts-node index.ts"
+    },
+    "main": "index.ts",
+    "devDependencies": {
+        "typescript": "^4.7.4"
+    },
+    "dependencies": {
+        "@diagrams-ts/graphviz-cli-renderer": "^0.5.0",
+        "@ts-graphviz/node": "^0.4.0",
+        "fs": "^0.0.1-security",
+        "ts-graphviz": "^0.16.0",
+        "ts-node": "^10.9.1"
+    }
 }

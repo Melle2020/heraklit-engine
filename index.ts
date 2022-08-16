@@ -1,5 +1,7 @@
 import { attribute, digraph, toDot  } from 'ts-graphviz';
 import fs from 'fs'
+import { CliRenderer } from "@diagrams-ts/graphviz-cli-renderer";
+
 const g = digraph('G');
 const data = fs.readFileSync('logicLanguage.txt', 'utf8')
 
@@ -67,6 +69,7 @@ for (const line of lines) {
     const relName = line.substring(0, openBracePos).trim();
 
     const place = symbolTable.get(relName);
+    console.log(place)
     if ( place && place['_type'] === 'Place') {
         // found a value for the place
         const params = line.substring(openBracePos + 1, closeBracePos)
@@ -85,9 +88,11 @@ for (const line of lines) {
 }
 
 
-
+const render = CliRenderer({ outputFile: "./render.png", format: "png" });
 const subgraphA = g.createSubgraph('A');
-const nodeA1 = subgraphA.createNode('A_node1');
+const nodeA1 = subgraphA.createNode('A_node1',{
+    [attribute.shape]: "box",
+  });
 const nodeA2 = subgraphA.createNode('A_node2');
 subgraphA.createEdge([nodeA1, nodeA2]);
 
@@ -102,3 +107,13 @@ g.createEdge([node1, node2]);
 const dot = toDot(g);
 console.log(dot);
 
+
+(async () => {
+    try {
+      await render(
+        dot
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  })();
