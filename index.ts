@@ -1,6 +1,6 @@
 import { attribute, digraph, toDot  } from 'ts-graphviz';
 import fs from 'fs'
-import { CliRenderer } from "@diagrams-ts/graphviz-cli-renderer";
+import {CliRenderer} from "@diagrams-ts/graphviz-cli-renderer";
 
 const g = digraph('G');
 const data = fs.readFileSync('logicLanguage.txt', 'utf8')
@@ -10,6 +10,11 @@ const symbolTable = new Map();
 
 const lines = data.toString().replace(/\r\n/g,'\n').split('\n');
 for (const line of lines) {
+
+    const tokensRegExp = /([\w-]+|\(|\)|\,)/g
+    const tokenList = line.match(tokensRegExp)
+    console.log("token list: " + JSON.stringify(tokenList))
+
     const openBracePos = line.indexOf('(');
     const closeBracePos = line.indexOf(')');
     const relName = line.substring(0, openBracePos);
