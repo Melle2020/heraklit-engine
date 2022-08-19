@@ -8,6 +8,8 @@ const data = fs.readFileSync('logicLanguage.txt', 'utf8')
 const symbolTable = new Map();
 
 
+
+
 const lines = data.toString().replace(/\r\n/g,'\n').split('\n');
 for (const line of lines) {
 
@@ -93,7 +95,7 @@ for (const line of lines) {
 }
 
 //reander graph on png
-const render = CliRenderer({ outputFile: "./render12.png", format: "png" });
+const render = CliRenderer({ outputFile: "./outPut/render12.png", format: "png" });
 
 // Begin to create graph
 const subgraphA = g.createSubgraph('A');
@@ -131,6 +133,10 @@ for(let elt of symbolTable.keys()){
              const node=g.createNode(elt,{[attribute.label]: value.values.join(' with')})
              
          }
+        //  else{
+
+        //     const node=g.createNode(elt,{[attribute.label]: value.values.join(' with')})
+        //  }
 
 
         
