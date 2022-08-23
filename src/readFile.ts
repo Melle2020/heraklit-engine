@@ -3,7 +3,7 @@ import fs from 'fs'
 import {CliRenderer} from "@diagrams-ts/graphviz-cli-renderer";
 
 const g = digraph('G');
-const data = fs.readFileSync('./data/system.hera', 'utf8')
+const data = fs.readFileSync('./data/system2.hera', 'utf8')
 
 const symbolTable = new Map();
 
@@ -108,7 +108,7 @@ for (const line of lines) {
 }
 
 //reander graph on png
-const render = CliRenderer({ outputFile: "./outPut/render12.png", format: "png" });
+const render = CliRenderer({ outputFile: "./outPut/render18.png", format: "png" });
 
 // Begin to create graph
 const subgraphA = g.createSubgraph('A');

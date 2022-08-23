@@ -1,0 +1,23 @@
+Place( vendor-available )
+Place( client-with-item )
+Place( vendor-with-item )
+Place( client-with-money )
+Transition( take-home )
+Transition( be-ordered )
+Transition( on-offer )
+Transition( vendor-packes )
+Transition( pays-take-home )
+Transition( pays-order )
+Transition( hanging hover )
+Flow( vendor-available, take-home, y )
+Flow( client-with-item, take-home, x, z )
+Flow( take-home,  vendor-with-item, y, z )
+Flow( take-home, client-with-money, x, m )
+m = f( z )
+Flow( vendor-available, on-offer, y )
+Flow( on-offer, vendor-available, y )
+
+vendor-available( V1 )
+client-with-item( Alice, shirt )
+f( shirt ) = 50Eur
+
