@@ -1,0 +1,5 @@
+
+vendor-available( V1 )
+vendor-available( V2 )
+client-with-item( Alice, shirt )
+f( shirt ) = 50Eur

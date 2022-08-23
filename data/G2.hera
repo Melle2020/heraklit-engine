@@ -10,12 +10,13 @@ Flow( take-home,  vendor-with-item, y, z )
 Flow( take-home, client-with-money, x, m )
 m = f( z )
 
-vendor-available( V1 )
+
 vendor-available( V2 )
-client-with-item( Alice, shirt )
+
 client-with-item( Bob, shoes )
 f( shirt ) = 50Eur
 f( shoes ) = 120Eur
 
-
+vendor-with-item( V1, shirt )
+client-with-money( Alice, 50Eur )
 
