@@ -1,0 +1,4 @@
+vendor-available( V1 )
+f( shirt ) = 50Eur
+vendor-with-item( V2, shirt )
+client-with-money( Alice, 50Eur )

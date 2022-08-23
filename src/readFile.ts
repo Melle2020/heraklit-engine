@@ -107,6 +107,15 @@ for (const line of lines) {
 
 }
 
+draw(symbolTable, "G1.svg")
+
+executeOneTransion(symbolTable)
+
+writeHeraklit(symbolTable, "G2.hera")
+
+draw(symbolTable, "G2.svg")
+
+
 //reander graph on png
 const render = CliRenderer({ outputFile: "./outPut/render18.png", format: "png" });
 
