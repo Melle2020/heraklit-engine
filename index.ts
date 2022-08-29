@@ -20,7 +20,7 @@ for (const line of lines) {
     const openBracePos = line.indexOf('(');
     const closeBracePos = line.indexOf(')');
     const relName = line.substring(0, openBracePos);
-    console.log(relName)
+    console.log("IS"+relName)
 
     const params = line.substring(openBracePos + 1, closeBracePos)
     const words = params.split(',')
