@@ -336,9 +336,9 @@ function initializedEntry(symbolTable:any,g:any){
 
             let key =''
             if(place._type==='Place'){
-
-              for(let k of place.value.keys()){
-              key=k
+              for(let k of place.value.keys()) {
+                key = k
+              }
             }
 
             const placevalue=place.value.get(key).list
