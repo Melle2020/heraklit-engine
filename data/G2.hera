@@ -12,16 +12,23 @@ Equation( item-take-home, ( m ) = f( z ) )
 
 
 vendor( v1 )
+vendor( v2 )
 vendor-available( V1 )
-Client( Alice )
+vendor-available( V2 )
+client( Alice )
 Item( shirt )
 Money( 50Eur )
+client( Bob )
+Item( shoes )
+Money( 120Eur )
 
 
 client-with-item( Alice, shirt )
 f( shirt ) = 50Eur
 f( shoes ) = 120Eur
 
-vendor-with-item( V1, shirt )
-client-with-money( Alice, 50Eur )
+client-with-item( Bob, shoes )
+
+
+
 
