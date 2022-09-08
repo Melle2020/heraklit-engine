@@ -1,4 +1,5 @@
-
+f( shoes ) = 120Eur
+f( shirt ) = 50Eur
 Place( vendor-available )
 Place( client-with-item )
 Place( vendor-with-item )
@@ -24,8 +25,8 @@ Money( 120Eur )
 
 
 client-with-item( Alice, shirt )
-f( shirt ) = 50Eur
-f( shoes ) = 120Eur
+
+
 
 client-with-item( Bob, shoes )
 

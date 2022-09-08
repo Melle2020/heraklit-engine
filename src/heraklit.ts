@@ -18,7 +18,7 @@ class Symbol {
   value: Map<string, Symbol> = new Map()
 }
 
-export { Symbol, Transition }
+export { Symbol, Transition , Association}
 
 
 class Transition extends Symbol {
@@ -32,7 +32,7 @@ class Flow extends Symbol {
   list: string[] = []
 }
 
-class Association {
+class Association extends Symbol  {
   params!: Params
   result!: Result
 }
@@ -71,9 +71,10 @@ addValueToSymbolTable(lines)
 getValueByKey(lines)
 graphCreated(symbolTable)
 const bindingsList = new BindingsList()
-findFnAssociation()
+readFnAssociation()
+// findFnAssociation()
 // initializedEntry(symbolTable, g)
-// checkAllTransition(symbolTable)
+checkAllTransition(symbolTable)
 // writeHeraklitSymbolTable(symbolTable, g)
 // runOnTransition(g,symbolTable)
 
@@ -241,8 +242,8 @@ function findFnAssociation(){
     let symbol = symbolTable.get(s) as Transition
     if ( symbol._type === 'Transition') {
       for ( const line of lines ) {
-        const tokensRegExp = /([\w-]+|\(|\)|\,)/g
-        const tokenList = line.match(tokensRegExp)
+        const tokensRegExp = /([\w-]+|\(|\)|\,|\=)/g
+        const tokenList:any = line.match(tokensRegExp)
         const openBracePos = line.indexOf('(');
         const closeBracePos = line.indexOf(')');
         const relName = line.substring(0, openBracePos);
@@ -254,12 +255,71 @@ function findFnAssociation(){
           console.log(tokenList)
           continue; 
         }
+        let i = 1
+        let paramsFn = new Params()
+        let resultFn  = new Result()
+        while ( tokenList[i] != '(' ) {
+          resultFn.list.push(tokenList[i])
+          i = i + 2
+        }
+         let j = i
+          j = j + 3
+        while (tokenList[i] != tokenList.length-1) {
+          paramsFn.list.push(tokenList[i])
+          i = i + 2;
+        }
+        // symbol.valueAssociation.set(name, {
+        //   params: paramsFn,
+        //   result: resultFn
+        //  }
+        // )
         console.log(tokenList)
-
       }
     }
   }
   
+}
+
+function readFnAssociation(){
+
+  for ( let line of lines){
+    const tokensRegExp = /([\w-]+|\(|\)|\,)|\=/g
+    const tokenList  = line.match(tokensRegExp) || []
+    const openBracePos = line.indexOf('(');
+    const closeBracePos = line.indexOf(')');
+    const relName = line.substring(0, openBracePos);
+    const params = line.substring(openBracePos + 1, closeBracePos)
+    const words: any[] = params.split(',')
+    const name = words[0].trim()
+
+    if( relName === 'Place' || relName === 'Transition' || relName === 'Flow' || relName === 'Equation' ){
+      continue;
+    }
+    let length = tokenList.length
+    if( length >= 6 && tokenList[1] === '(' && tokenList[3]  === ')'  && tokenList[4] === '=' ){
+      let fn = symbolTable.get(relName)
+      if(!fn){
+        
+        fn = new Symbol()
+        fn.name = relName
+        fn._type = 'Function'
+        symbolTable.set(relName,fn)
+
+      }
+      let association =  new Association()
+      let paramsFn = new Params()
+      let resultFn = new Result()
+
+      paramsFn.list.push(tokenList[2])
+      resultFn.list.push(tokenList[5])
+      association.params = paramsFn
+      association.result = resultFn
+      fn.value.set(tokenList[2],association)
+    }
+
+  }
+
+
 }
 
 
@@ -387,134 +447,81 @@ function graphCreated(symbolTable: any) {
 
 // }
 
+//run transition
+function checkAllTransition(symbolTable: any) {
 
-// function checkAllTransition(symbolTable: any) {
+  for (let s of symbolTable.keys()) {
 
-//   for (let s of symbolTable.keys()) {
+    const eSymbol = symbolTable.get(s)
+    if (eSymbol._type === 'Transition') {
+      let trans: Transition;
+      trans = eSymbol as Transition
 
-//     const eSymbol = symbolTable.get(s)
+      for (let flow of trans.inFlows) {
+        let place = flow.value.get('src') as Symbol
+        let varList = flow.list
+        let valueList = []
+        for (let v of place?.value.values()) {
+          let vp = v as ValuePlace
+          valueList.push(vp.list)
 
+        }
+        bindingsList.expand(varList, valueList)
 
+      }
 
-//     if (eSymbol._type === 'Transition') {
-//       let trans: Transition;
-//       trans = eSymbol as Transition
+      for (let flow of trans.outFlows) {
+        let place = flow.value.get('tgt') as Symbol
+        let varList = flow.list
+        bindingsList.expandOut(varList, symbolTable, trans)
 
-//       for (let flow of trans.inFlows) {
-//         let place = flow.value.get('src') as Symbol
-//         let varList = flow.list
-//         let valueList = []
-//         for (let v of place?.value.values()) {
-//           let vp = v as ValuePlace
-//           valueList.push(vp.list)
+      }
+    }
 
-//         }
-//         bindingsList.expand(varList, valueList)
-
-//       }
-
-//       for (let flow of trans.outFlows) {
-//         let place = flow.value.get('tgt') as Symbol
-//         let varList = flow.list
-//         bindingsList.expandOut(varList, symbolTable, trans)
-
-//       }
-//     }
-
-//     // for (let elt of eSymbol.outFlows) {
-//     //   const tgt = elt.value.get('tgt').name
-//     //   let i = 0
-
-//     //   for (let e of gEdge) {
-//     //     let place = symbolTable.get(e.targets[0].port)
-//     //     if (tgt === e.targets[1].port && t.id === e.targets[0].id) {
-
-//     //       place = symbolTable.get(tgt)
-
-//     //       let key = ''
-//     //       if (place._type === 'Place') {
-
-//     //         for (let k of place.value.keys()) {
-//     //           key = k
-//     //         }
-
-//     //         const placevalue = place.value.get(key).list
-
-//     //         // gEdge[i].targets[1].id= "("+placevalue.join("")+")"
-//     //         gEdge[i].attributes.attrs.set("label", "(" + placevalue.join("") + ")")
-//     //         i++
-
-//     //       }
-
-//     //       // const tgtVal="{"+elt.var.join(",")+"}"
-
-//     //     } else if (place && gEdge[i].targets[0].id && place._type === "Place") {
-//     //       gEdge[i].attributes.attrs.set("label", gEdge[i].targets[0].id)
-
-//     //       // gEdge[i].targets[0].id= ""
+  }
+  bindingsList.printBindingList()
 
 
 
-//     //       i++
+}
 
-//     //     } else {
-//     //       if (i === gEdge.length) {
-//     //         break;
-//     //       }
-//     //       i++
-//     //     }
-//     //     console.log(g)
+async function writeHeraklitSymbolTable(symbolTable: any, g: any) {
 
-//     //   }
+  let data = ""
+  for (let trans of g.nodes) {
+    //Adding all place
+    for (let e of g.edges) {
 
+      if (e.targets[0].id === trans.id) {
 
+        data = data + 'Place( ' + e.targets[1].port + ' )' + '\n'
+      }
+      else if (e.targets[1].id === trans.id) {
+        data = data + 'Place( ' + e.targets[0].port + ' )' + '\n'
 
-//     // }
+      }
 
+    }
 
-//   }
-
-
-
-// }
-
-// async function writeHeraklitSymbolTable(symbolTable: any, g: any) {
-
-//   let data = ""
-//   for (let trans of g.nodes) {
-//     //Adding all place
-//     for (let e of g.edges) {
-
-//       if (e.targets[0].id === trans.id) {
-
-//         data = data + 'Place( ' + e.targets[1].port + ' )' + '\n'
-//       }
-//       else if (e.targets[1].id === trans.id) {
-//         data = data + 'Place( ' + e.targets[0].port + ' )' + '\n'
-
-//       }
-
-//     }
-
-//     data = data + 'Transition( ' + trans.id + ' )' + '\n'
-//     for (let e of g.edges) {
+    data = data + 'Transition( ' + trans.id + ' )' + '\n'
+    for (let e of g.edges) {
 
 
 
-//       data = data + 'Flow( ' + (e.targets[0].port || e.targets[0].id) + ', ' + (e.targets[1].port || e.targets[1].id) + ')' + '\n'
+      data = data + 'Flow( ' + (e.targets[0].port || e.targets[0].id) + ', ' + (e.targets[1].port || e.targets[1].id) + ')' + '\n'
 
 
 
-//     }
+    }
 
-//   }
-//   writeOnFile(data, 'G3.hera')
-
-
-//   // data=data+'Transition( '+trans.id+ ' )'+'\n'
+  }
+  writeOnFile(data, 'G3.hera')
 
 
-// }
+  // data=data+'Transition( '+trans.id+ ' )'+'\n'
+
+
+}
 
 
 
@@ -528,7 +535,7 @@ async function writeOnFile(data: string, file: string) {
       join(__dirname, file),
       'utf-8',
     );
-    console.log(contents); // 👉️ "One Two Three Four"
+    console.log(contents);  
 
     return contents;
   } catch (err) {

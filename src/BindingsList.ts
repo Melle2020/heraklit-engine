@@ -1,4 +1,4 @@
-import { Symbol, Transition } from "./heraklit"
+import { Association, Symbol, Transition } from "./heraklit"
 
 class BindingsList{
     bindings:Map<string,string>[]=[]
@@ -49,8 +49,16 @@ class BindingsList{
                 for(let fn of transition.equations.keys()){
                     let eq=transition.equations.get(fn)
                     if(eq?.result.list[0] === vn) {
-                        symbolTable.get(fn)
-                        console.log(vn)
+                        let fnDef = symbolTable.get(fn)
+                        if (!fnDef){
+                            continue;
+                        }
+                        let paramVar =  eq.params.list[0]
+                        let paramValue = oldMap.get(paramVar) || ''
+                        let ass = fnDef.value.get(paramValue) as Association
+                        let resultValue = ass.result.list[0]
+                        console.log(resultValue)
+                        oldMap.set(vn,resultValue)
                         
                     }
                 }
@@ -59,6 +67,16 @@ class BindingsList{
         }
 
 
+    }
+
+    printBindingList(){
+        for ( let elt of this.bindings){
+            let line  = ''
+            for ( let k of elt.keys()){
+                line+= k + ' ' + elt.get(k) +',' + ''
+            }
+            console.log(line)
+        }
     }
 }
 export default BindingsList
