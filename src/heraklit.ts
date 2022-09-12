@@ -1,17 +1,15 @@
-import { attribute, digraph, Dot, toDot } from 'ts-graphviz';
+import { attribute, digraph, Dot, graph, toDot } from 'ts-graphviz';
 import fs from 'fs'
 import { CliRenderer } from "@diagrams-ts/graphviz-cli-renderer";
 import { readFileSync, writeFileSync, promises as fsPromises } from 'fs';
 import { join } from 'path';
 import BindingsList from './BindingsList';
 
-const g = digraph('G');
+
 const data = fs.readFileSync('./data/G2.hera', 'utf8')
 
 //Class system
-
 const symbolTable: Map<string, Symbol> = new Map();
-
 class Symbol {
   name!: string
   _type!: string
@@ -19,7 +17,6 @@ class Symbol {
 }
 
 export { Symbol, Transition , Association}
-
 
 class Transition extends Symbol {
   inFlows: Flow[] = []
@@ -58,10 +55,6 @@ class TypeValue extends Symbol {
 }
 
 
-
-
-
-
 const lines = data.toString().replace(/\r\n/g, '\n').split('\n');
 
 
@@ -69,7 +62,7 @@ const lines = data.toString().replace(/\r\n/g, '\n').split('\n');
 setSymboleTableByReading(lines)
 addValueToSymbolTable(lines)
 getValueByKey(lines)
-graphCreated(symbolTable)
+// graphCreated(symbolTable)
 const bindingsList = new BindingsList()
 readFnAssociation()
 // findFnAssociation()
@@ -77,10 +70,11 @@ readFnAssociation()
 checkAllTransition(symbolTable)
 // writeHeraklitSymbolTable(symbolTable, g)
 // runOnTransition(g,symbolTable)
+createGraphByStep()
 
 //Set all symbol in symbol table
 function setSymboleTableByReading(lines: any) {
-  for (const line of lines) {
+  for ( const line of lines ) {
     const tokensRegExp = /([\w-]+|\(|\)|\,)/g
     const tokenList = line.match(tokensRegExp)
     const openBracePos = line.indexOf('(');
@@ -108,7 +102,7 @@ function setSymboleTableByReading(lines: any) {
 //set value in symbol table
 function addValueToSymbolTable(lines: any) {
   let typeValue = new TypeValue()
-  for (const line of lines) {
+  for ( const line of lines ) {
     const tokensRegExp = /([\w-]+|\(|\)|\,|\=)/g
     const tokenList = line.match(tokensRegExp)
     if (line === '') {
@@ -190,14 +184,14 @@ function addValueToSymbolTable(lines: any) {
       console.log(symbolTable)
     }
   }
-  if (typeValue) {
+  if ( typeValue ) {
     symbolTable.set('declaration', typeValue)
   }
   console.log(symbolTable)
 }
 
 function getValueByKey(lines: any) {
-  for (const line of lines) {
+  for ( const line of lines ) {
     const tokensRegExp = /([\w-]+|\(|\)|\,)/g
     const tokenList = line.match(tokensRegExp)
     const openBracePos = line.indexOf('(');
@@ -237,48 +231,48 @@ function getValueByKey(lines: any) {
   console.log(symbolTable)
 }
 
-function findFnAssociation(){
-  for ( const s of symbolTable.keys()){
-    let symbol = symbolTable.get(s) as Transition
-    if ( symbol._type === 'Transition') {
-      for ( const line of lines ) {
-        const tokensRegExp = /([\w-]+|\(|\)|\,|\=)/g
-        const tokenList:any = line.match(tokensRegExp)
-        const openBracePos = line.indexOf('(');
-        const closeBracePos = line.indexOf(')');
-        const relName = line.substring(0, openBracePos);
-        const params = line.substring(openBracePos + 1, closeBracePos)
-        const words: any[] = params.split(',')
-        const name = words[0].trim()
-        console.log(tokenList)
-        if ( !symbol.equations.get(relName) ) {
-          console.log(tokenList)
-          continue; 
-        }
-        let i = 1
-        let paramsFn = new Params()
-        let resultFn  = new Result()
-        while ( tokenList[i] != '(' ) {
-          resultFn.list.push(tokenList[i])
-          i = i + 2
-        }
-         let j = i
-          j = j + 3
-        while (tokenList[i] != tokenList.length-1) {
-          paramsFn.list.push(tokenList[i])
-          i = i + 2;
-        }
-        // symbol.valueAssociation.set(name, {
-        //   params: paramsFn,
-        //   result: resultFn
-        //  }
-        // )
-        console.log(tokenList)
-      }
-    }
-  }
+// function findFnAssociation(){
+//   for ( const s of symbolTable.keys()){
+//     let symbol = symbolTable.get(s) as Transition
+//     if ( symbol._type === 'Transition') {
+//       for ( const line of lines ) {
+//         const tokensRegExp = /([\w-]+|\(|\)|\,|\=)/g
+//         const tokenList:any = line.match(tokensRegExp)
+//         const openBracePos = line.indexOf('(');
+//         const closeBracePos = line.indexOf(')');
+//         const relName = line.substring(0, openBracePos);
+//         const params = line.substring(openBracePos + 1, closeBracePos)
+//         const words: any[] = params.split(',')
+//         const name = words[0].trim()
+//         console.log(tokenList)
+//         if ( !symbol.equations.get(relName) ) {
+//           console.log(tokenList)
+//           continue; 
+//         }
+//         let i = 1
+//         let paramsFn = new Params()
+//         let resultFn  = new Result()
+//         while ( tokenList[i] != '(' ) {
+//           resultFn.list.push(tokenList[i])
+//           i = i + 2
+//         }
+//          let j = i
+//           j = j + 3
+//         while (tokenList[i] != tokenList.length-1) {
+//           paramsFn.list.push(tokenList[i])
+//           i = i + 2;
+//         }
+//         // symbol.valueAssociation.set(name, {
+//         //   params: paramsFn,
+//         //   result: resultFn
+//         //  }
+//         // )
+//         console.log(tokenList)
+//       }
+//     }
+//   }
   
-}
+// }
 
 function readFnAssociation(){
 
@@ -323,48 +317,49 @@ function readFnAssociation(){
 }
 
 
-function graphCreated(symbolTable: any) {
-  for ( let elt of symbolTable.keys() ) {
-    const value = symbolTable.get(elt);
-    if (value._type === 'Transition') {
-      const node = g.createNode(elt, {
-        [attribute.shape]: "box",
-      })
-    } else if (value._type === 'Place') {
-      let key = ''
-      for (let v of value.value.values()) {
-        key += '(' + v.list.join('') + ') '
-      }
-      const node = g.createNode(elt, {
-        [attribute.label]: key
-      })
-    }
-  }
-  for ( let elt of symbolTable.keys() ) {
-    const value = symbolTable.get(elt);
-    if ( value._type === 'Transition' ) {
-      let i = 1
-      for ( let item of value.inFlows ) {
-        const src = item.value.get('src').value.keys()
-        const srcVal = "{" + item.list.join(",") + "}"
-        const node = g.createEdge([item.value.get('src').name, elt], {
-          [attribute.label]: srcVal
-        })
-        i++;
-      }
-      for ( let item of value.outFlows ) {
-        const tgt = item.value.get('tgt').value.keys()
-        const tgtVal = "{" + item.list.join(",") + "}"
-        const node = g.createEdge([elt, item.value.get('tgt').name], {
-          [attribute.label]: tgtVal
-        })
-        i++;
-      }
-    }
-  }
-  graphToImagePng(g, 'Gen')
+// function graphCreated(symbolTable: any) {
+//   for ( let elt of symbolTable.keys() ) {
+//     const value = symbolTable.get(elt);
+//     if (value._type === 'Transition') {
+//       const node = g.createNode(elt, {
+//         [attribute.shape]: "box",
+//       })
+//     } else if (value._type === 'Place') {
+//       let key = ''
+//       for (let v of value.value.values()) {
+//         key += '(' + v.list.join('') + ') '
+//       }
+//       const node = g.createNode(elt, {
+//         [attribute.label]: key
+//       })
+//     }
+//   }
+//   for ( let elt of symbolTable.keys() ) {
+//     const value = symbolTable.get(elt);
+//     if ( value._type === 'Transition' ) {
+//       let i = 1
+//       for ( let item of value.inFlows ) {
+//         const src = item.value.get('src').value.keys()
+//         const srcVal = "{" + item.list.join(",") + "}"
+//         const node = g.createEdge([item.value.get('src').name, elt], {
+//           [attribute.label]: srcVal
+//         })
+//         i++;
+//       }
+//       for ( let item of value.outFlows ) {
+//         const tgt = item.value.get('tgt').value.keys()
+//         const tgtVal = "{" + item.list.join(",") + "}"
+//         const node = g.createEdge([elt, item.value.get('tgt').name], {
+//           [attribute.label]: tgtVal
+//         })
+//         i++;
+//       }
+//     }
+//   }
+//   graphToImagePng(g, 'Gen')
+//   createGraphByStep()
 
-}
+// }
 
 
 // function initializedEntry(symbolTable: any, g: any) {
@@ -485,45 +480,91 @@ function checkAllTransition(symbolTable: any) {
 
 }
 
-async function writeHeraklitSymbolTable(symbolTable: any, g: any) {
 
-  let data = ""
-  for (let trans of g.nodes) {
-    //Adding all place
-    for (let e of g.edges) {
 
-      if (e.targets[0].id === trans.id) {
 
-        data = data + 'Place( ' + e.targets[1].port + ' )' + '\n'
-      }
-      else if (e.targets[1].id === trans.id) {
-        data = data + 'Place( ' + e.targets[0].port + ' )' + '\n'
+// async function writeHeraklitSymbolTable(symbolTable: any, g: any) {
 
-      }
+//   let data = ""
+//   for (let trans of g.nodes) {
+//     //Adding all place
+//     for (let e of g.edges) {
 
+//       if (e.targets[0].id === trans.id) {
+
+//         data = data + 'Place( ' + e.targets[1].port + ' )' + '\n'
+//       }
+//       else if (e.targets[1].id === trans.id) {
+//         data = data + 'Place( ' + e.targets[0].port + ' )' + '\n'
+
+//       }
+
+//     }
+
+//     data = data + 'Transition( ' + trans.id + ' )' + '\n'
+//     for (let e of g.edges) {
+
+
+
+//       data = data + 'Flow( ' + (e.targets[0].port || e.targets[0].id) + ', ' + (e.targets[1].port || e.targets[1].id) + ')' + '\n'
+
+
+
+//     }
+
+//   }
+//   writeOnFile(data, 'G3.hera')
+
+
+//   // data=data+'Transition( '+trans.id+ ' )'+'\n'
+
+
+// }
+
+function createGraphByStep(){
+  for ( let [elt , val] of symbolTable ){
+    if ( val._type === 'Transition' ){
+      runTransition(val as Transition)
     }
-
-    data = data + 'Transition( ' + trans.id + ' )' + '\n'
-    for (let e of g.edges) {
-
-
-
-      data = data + 'Flow( ' + (e.targets[0].port || e.targets[0].id) + ', ' + (e.targets[1].port || e.targets[1].id) + ')' + '\n'
-
-
-
-    }
-
   }
-  writeOnFile(data, 'G3.hera')
-
-
-  // data=data+'Transition( '+trans.id+ ' )'+'\n'
-
 
 }
 
-
+function runTransition(transition:Transition){
+  let i=1
+  for ( let elt of bindingsList.bindings ){
+    const g = digraph('G'+i);
+    const node = g.createNode(transition.name,{
+      [attribute.shape]: "box",
+    })
+    for ( let item of transition.inFlows ){
+      let flow = item.value.get('src') as Flow
+      let tab:any[]=[]
+      for ( let v of item.list ){
+        tab.push(elt.get(v))
+      }  
+      let value = '('+tab.join(',')+')'
+      if (value){
+        const node2 = g.createNode(value)
+        const edge = g.createEdge([value,transition.name])
+      } 
+    }
+      for ( let item of transition.outFlows){
+        let flow = item.value.get('tgt') as Flow
+        let tab:any[]=[]
+        for ( let v of item.list ){
+          tab.push(elt.get(v))
+        }  
+        let value = '('+tab.join(',')+')'
+        if ( value){
+          const node3 = g.createNode(value)
+          const edge = g.createEdge([transition.name,value])
+        }
+      }
+    i++;  
+    graphToImagePng(g,'test'+i)
+  }
+}
 
 async function writeOnFile(data: string, file: string) {
   try {
