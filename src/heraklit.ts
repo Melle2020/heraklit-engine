@@ -1,12 +1,17 @@
-import { attribute, digraph, Dot, graph, toDot } from 'ts-graphviz';
-import fs from 'fs'
+import { attribute, Digraph, digraph, Dot, graph, toDot } from 'ts-graphviz';
+import fs from "fs"
+
 import { CliRenderer } from "@diagrams-ts/graphviz-cli-renderer";
 import { readFileSync, writeFileSync, promises as fsPromises } from 'fs';
 import { join } from 'path';
 import BindingsList from './BindingsList';
+import _ from "lodash";
+import { ReacheabilityGraph, ReacheableState, RGTransition } from './ReacheabilityGraph';
+
 
 
 const data = fs.readFileSync('./data/G2.hera', 'utf8')
+const dg = digraph('G')
 
 //Class system
 const symbolTable: Map<string, Symbol> = new Map();
@@ -56,21 +61,17 @@ class TypeValue extends Symbol {
 
 
 const lines = data.toString().replace(/\r\n/g, '\n').split('\n');
-
+const bindingsList = new BindingsList()
 
 
 setSymboleTableByReading(lines)
 addValueToSymbolTable(lines)
 getValueByKey(lines)
-// graphCreated(symbolTable)
-const bindingsList = new BindingsList()
+graphCreated(symbolTable)
 readFnAssociation()
-// findFnAssociation()
-// initializedEntry(symbolTable, g)
-checkAllTransition(symbolTable)
-// writeHeraklitSymbolTable(symbolTable, g)
-// runOnTransition(g,symbolTable)
-createGraphByStep()
+
+
+computeAllState(symbolTable)
 
 //Set all symbol in symbol table
 function setSymboleTableByReading(lines: any) {
@@ -231,49 +232,6 @@ function getValueByKey(lines: any) {
   console.log(symbolTable)
 }
 
-// function findFnAssociation(){
-//   for ( const s of symbolTable.keys()){
-//     let symbol = symbolTable.get(s) as Transition
-//     if ( symbol._type === 'Transition') {
-//       for ( const line of lines ) {
-//         const tokensRegExp = /([\w-]+|\(|\)|\,|\=)/g
-//         const tokenList:any = line.match(tokensRegExp)
-//         const openBracePos = line.indexOf('(');
-//         const closeBracePos = line.indexOf(')');
-//         const relName = line.substring(0, openBracePos);
-//         const params = line.substring(openBracePos + 1, closeBracePos)
-//         const words: any[] = params.split(',')
-//         const name = words[0].trim()
-//         console.log(tokenList)
-//         if ( !symbol.equations.get(relName) ) {
-//           console.log(tokenList)
-//           continue; 
-//         }
-//         let i = 1
-//         let paramsFn = new Params()
-//         let resultFn  = new Result()
-//         while ( tokenList[i] != '(' ) {
-//           resultFn.list.push(tokenList[i])
-//           i = i + 2
-//         }
-//          let j = i
-//           j = j + 3
-//         while (tokenList[i] != tokenList.length-1) {
-//           paramsFn.list.push(tokenList[i])
-//           i = i + 2;
-//         }
-//         // symbol.valueAssociation.set(name, {
-//         //   params: paramsFn,
-//         //   result: resultFn
-//         //  }
-//         // )
-//         console.log(tokenList)
-//       }
-//     }
-//   }
-  
-// }
-
 function readFnAssociation(){
 
   for ( let line of lines){
@@ -317,49 +275,49 @@ function readFnAssociation(){
 }
 
 
-// function graphCreated(symbolTable: any) {
-//   for ( let elt of symbolTable.keys() ) {
-//     const value = symbolTable.get(elt);
-//     if (value._type === 'Transition') {
-//       const node = g.createNode(elt, {
-//         [attribute.shape]: "box",
-//       })
-//     } else if (value._type === 'Place') {
-//       let key = ''
-//       for (let v of value.value.values()) {
-//         key += '(' + v.list.join('') + ') '
-//       }
-//       const node = g.createNode(elt, {
-//         [attribute.label]: key
-//       })
-//     }
-//   }
-//   for ( let elt of symbolTable.keys() ) {
-//     const value = symbolTable.get(elt);
-//     if ( value._type === 'Transition' ) {
-//       let i = 1
-//       for ( let item of value.inFlows ) {
-//         const src = item.value.get('src').value.keys()
-//         const srcVal = "{" + item.list.join(",") + "}"
-//         const node = g.createEdge([item.value.get('src').name, elt], {
-//           [attribute.label]: srcVal
-//         })
-//         i++;
-//       }
-//       for ( let item of value.outFlows ) {
-//         const tgt = item.value.get('tgt').value.keys()
-//         const tgtVal = "{" + item.list.join(",") + "}"
-//         const node = g.createEdge([elt, item.value.get('tgt').name], {
-//           [attribute.label]: tgtVal
-//         })
-//         i++;
-//       }
-//     }
-//   }
-//   graphToImagePng(g, 'Gen')
-//   createGraphByStep()
+function graphCreated(symbolTable: any) {
+  for ( let elt of symbolTable.keys() ) {
+    const value = symbolTable.get(elt);
+    if (value._type === 'Transition') {
+      const node = dg.createNode(elt, {
+        [attribute.shape]: "box",
+      })
+    } else if (value._type === 'Place') {
+      let key = ''
+      for (let v of value.value.values()) {
+        key += '(' + v.list.join('') + ') '
+      }
+      const node = dg.createNode(elt, {
+        [attribute.label]: key
+      })
+    }
+  }
+  for ( let elt of symbolTable.keys() ) {
+    const value = symbolTable.get(elt);
+    if ( value._type === 'Transition' ) {
+      let i = 1
+      for ( let item of value.inFlows ) {
+        const src = item.value.get('src').value.keys()
+        const srcVal = "{" + item.list.join(",") + "}"
+        const node = dg.createEdge([item.value.get('src').name, elt], {
+          [attribute.label]: srcVal
+        })
+        i++;
+      }
+      for ( let item of value.outFlows ) {
+        const tgt = item.value.get('tgt').value.keys()
+        const tgtVal = "{" + item.list.join(",") + "}"
+        const node = dg.createEdge([elt, item.value.get('tgt').name], {
+          [attribute.label]: tgtVal
+        })
+        i++;
+      }
+    }
+  }
 
-// }
+  graphToImagePng(dg, 'Gen')
+
+}
 
 
 // function initializedEntry(symbolTable: any, g: any) {
@@ -443,44 +401,285 @@ function readFnAssociation(){
 // }
 
 //run transition
-function checkAllTransition(symbolTable: any) {
+// function checkAllTransition(symbolTable: any) {
 
-  for (let s of symbolTable.keys()) {
+//   for(let s of symbolTable.keys()) {
 
-    const eSymbol = symbolTable.get(s)
-    if (eSymbol._type === 'Transition') {
+//     const eSymbol = symbolTable.get(s)
+//     if (eSymbol._type === 'Transition') {
+//       let trans: Transition;
+//       trans = eSymbol as Transition
+
+//       for (let flow of trans.inFlows) {
+//         let place = flow.value.get('src') as Symbol
+//         let varList = flow.list
+//         let valueList = []
+//         for (let v of place?.value.values()) {
+//           let vp = v as ValuePlace
+//           valueList.push(vp.list)
+
+//         }
+//         bindingsList.expand(varList, valueList)
+
+//       }
+
+//       for (let flow of trans.outFlows) {
+//         let place = flow.value.get('tgt') as Symbol
+//         let varList = flow.list
+//         bindingsList.expandOut(varList, symbolTable, trans)
+
+//       }
+//     }
+
+//   }
+// }
+
+function computeAllState(startState:Map<string, Symbol>){
+  // Create reacheability graph
+  let rg:ReacheabilityGraph = new ReacheabilityGraph()
+  let key = generatingHeraklitString(startState)
+
+  // Add start state to reacheability graph
+  let rc: ReacheableState = new ReacheableState()
+  rc.symbolTable = startState
+  rg.stateMap.set(key,rc)
+
+  // add  start state to todoList 
+  let todoList: ReacheableState[] = []
+  todoList.push(rc)
+
+  // for each todoList entry expand one step
+  while(todoList.length > 0){
+    let currentState = todoList[0]
+    todoList.splice(0,1)
+    expandOneState(rg,todoList,currentState)
+  }
+}
+
+function expandOneState(g:ReacheabilityGraph,todoList:ReacheableState[],state:ReacheableState){
+  //for each transition 
+  for(let s of state.symbolTable.keys()) {
+    const eSymbol = state.symbolTable.get(s) as Symbol
+    if(eSymbol._type === 'Transition') {
+      let transitionBindings = new BindingsList()
       let trans: Transition;
       trans = eSymbol as Transition
 
-      for (let flow of trans.inFlows) {
+      for(let flow of trans.inFlows) {
         let place = flow.value.get('src') as Symbol
         let varList = flow.list
         let valueList = []
         for (let v of place?.value.values()) {
           let vp = v as ValuePlace
           valueList.push(vp.list)
-
         }
-        bindingsList.expand(varList, valueList)
-
+        transitionBindings.expand(varList, valueList)
       }
-
       for (let flow of trans.outFlows) {
         let place = flow.value.get('tgt') as Symbol
         let varList = flow.list
-        bindingsList.expandOut(varList, symbolTable, trans)
+        transitionBindings.expandOut(varList, symbolTable, trans)
+      }
+      //for each binding
+      for( let b of transitionBindings.bindings){
+        doOneBinding(g,todoList,state,b,trans)
 
       }
-    }
-
+    }   
   }
-  bindingsList.printBindingList()
-
-
-
 }
 
+function doOneBinding(g:ReacheabilityGraph,todoList:ReacheableState[],state:ReacheableState,currentBinding:Map<string,string>,transition:Transition){
+  let cloneState = _.cloneDeep(state.symbolTable)
+  //Execute the binding
+  let cloneTransition:Transition|undefined = undefined
+  for(let symbol of cloneState.values()){
+    if(symbol.name === transition.name){
+       cloneTransition = symbol as Transition
+       break;
+    }
+  }
+  if(!cloneTransition ) {
+    return
+  }
+  for(let item of cloneTransition.inFlows){
+    let place = item.value.get('src') as ValuePlace
+    let tab:any[]=[]
+    for(let v of item.list){
+      tab.push(currentBinding.get(v))
+    }  
+    for(let obj of tab){
+      place.value.delete(obj)
+    }
+     
+  }
+  for(let item of cloneTransition.outFlows){
+    let vP = item.value.get('tgt') as ValuePlace
+    let newOutput = new ValuePlace()
+    let tab:any[]=[]
+    for ( let v of item.list ){
+      let valCurr = currentBinding.get(v) as string
+      newOutput.list.push(valCurr)   
+      newOutput.list.push(','  )
+    }
+    let list:string[]
+    list = newOutput.list
+    newOutput.list.splice(-1,1) 
+    vP.value.set(newOutput.list[0],newOutput)  
+  }
 
+  //is it a new state?
+  let newKey = generatingHeraklitString(cloneState)
+  let existingState = g.stateMap.get(newKey)
+
+  //If yes add it to the reacheability graph,add to the todoList, add transition edge (old state to new state )
+  // if yes store into disk as image(png ,svg,..) and heraklit notation
+  let rs:ReacheableState = new ReacheableState()
+  rs.symbolTable = cloneState
+  if(!existingState){
+    g.stateMap.set(newKey,rs)
+    todoList.push(rs)
+    let rgt:RGTransition = new RGTransition ()
+    rgt.name = transition.name
+    rgt.target = rs
+    state.outGoingTransition.push(rgt)
+    //generate graph
+    generatingGraphState(rs,1)
+
+  }
+  else{
+     // else add this transition into a old state 
+    let rgt:RGTransition = new RGTransition ()
+    rgt.name = transition.name
+    rgt.target = existingState
+
+    state.outGoingTransition.push(rgt)
+
+
+  }
+}
+
+function generatingHeraklitString(state:Map<string,Symbol>){
+  let predicate:string[]=[]
+  for(let symbol of state.values()){
+    if( symbol._type === "Place"){
+      let line = `Place( ${symbol.name} )`
+      predicate.push(line)
+      for(let s of symbol.value.values()){
+        let vp = s as ValuePlace
+        line = `${symbol.name}( ${vp.list.join('')} )`
+        predicate.push(line)
+      }
+    }
+    else if(symbol._type === "Transition"){
+      let line = `Transition( ${symbol.name} )`
+      predicate.push(line)
+      let transition = symbol as Transition
+      if(transition.inFlows.length){        
+        for(let flow of transition.inFlows){
+          let line = `${flow.value.get('src')?.name}, ${flow.value.get('tgt')?.name}, `
+          if(flow.list.length >= 0){
+              for(let variable of flow.list){
+                line+=`${variable}, `
+              }
+          }
+          line =`Flow ( ${line})`
+          predicate.push(line)       
+
+        }
+      }
+      if(transition.outFlows.length){
+        for(let flow of transition.outFlows){
+          let line = `${flow.value.get('tgt')?.name}, ${flow.value.get('src')?.name}, `
+          if(flow.list.length >= 0){
+              for(let variable of flow.list){
+                line+=`${variable}, `
+              }
+          }
+          line =`Flow ( ${line})`
+          predicate.push(line)       
+
+        }
+      }
+      if(transition.equations){
+        for(let [k , v] of transition.equations){ 
+          let lineR = ""
+          let lineV = ""
+          if(v.result.list.length >= 0){
+            //check all result
+            for(let r of v.result.list ){
+              lineR += `${r}, `
+            }
+            lineR = `( ${lineR} )`      
+            //check all param
+            for(let p of v.params.list ){
+              lineV += `${p}, `
+            }
+            lineV = `f( ${lineV} )`      
+          }
+        let line = `Equation( ${transition.name}, ${lineR} = ${lineV}  )`
+        predicate.push(line)
+        }
+        
+
+      }
+
+    }
+  }
+
+  predicate = predicate.sort()
+
+  let fullText = predicate.join('\n')
+  return fullText
+}
+
+function generatingGraphState(state:ReacheableState,i:number){
+  let dg = digraph('G'+i)
+  for(let elt of state.symbolTable.values()) {
+    // const value = symbolTable.get(elt);
+    if(elt._type === 'Transition') {
+      const node = dg.createNode(elt.name, {
+        [attribute.shape]: "box",
+      })
+    } else if(elt._type === 'Place') {
+      let key = ''
+      for(let v of elt.value.values()) {
+        let vp = v as ValuePlace
+        key += '(' + vp.list.join('') + ') '
+      }
+      const node = dg.createNode(elt.name, {
+        [attribute.label]: key
+      })
+    }
+  }
+  for ( let elt of state.symbolTable.values() ) {
+    if ( elt._type === 'Transition' ) {
+      let transition = elt as Transition
+      let i = 1
+      for ( let item of transition.inFlows ) {
+        const src = item.value.get('src')?.value.keys()
+        const srcVal = "{" + item.list.join(",") + "}"
+        const placeN:string = item.value?.get('src')?.name as string
+        const node = dg.createEdge([ placeN, transition.name], {
+          [attribute.label]: srcVal
+        })
+        i++;
+      }
+      for ( let item of transition.outFlows ) {
+        const tgt = item.value.get('tgt')?.value.keys()
+        const tgtVal = "{" + item.list.join(",") + "}"
+        const placeN:string = item.value?.get('tgt')?.name as string
+        const node = dg.createEdge([transition.name, placeN], {
+          [attribute.label]: tgtVal
+        })
+        i++;
+      }
+    }
+  }
+
+  graphToImagePng(dg, 'S'+i)
+
+}
 
 
 // async function writeHeraklitSymbolTable(symbolTable: any, g: any) {
@@ -521,36 +720,66 @@ function checkAllTransition(symbolTable: any) {
 
 // }
 
-function createGraphByStep(){
-  for ( let [elt , val] of symbolTable ){
-    if ( val._type === 'Transition' ){
-      runTransition(val as Transition)
-    }
-  }
+// function createGraphByStep(){
+//   for ( let [elt , val] of symbolTable ){
+//     if ( val._type === 'Transition' ){
+//       runTransition(val as Transition)
+//     }
+//   }
 
-}
+// }
+// DoOneTransitionVariable()
+// function DoOneTransitionVariable(){
+//   for ( let [elt , val ] of symbolTable ){
+//     const transition = val as Transition
+//     if ( val._type === 'Transition' ){
+//        for ( let flow of transition.inFlows){
+//         bindInputVariable(flow)
+//        }
+//     }
+//   }
+// }
+
+// function bindInputVariable(flow:Flow){
+//   let place = flow.value.get('src') as ValuePlace
+//   const tab:any[] = flow.list
+
+//   console.log(tab)
+
+// }
 
 function runTransition(transition:Transition){
   let i=1
-  for ( let elt of bindingsList.bindings ){
+  let newSymbolTable:Map<string,Symbol>=new Map(symbolTable)
+  for ( let elt of bindingsList?.bindings ){
     const g = digraph('G'+i);
     const node = g.createNode(transition.name,{
       [attribute.shape]: "box",
     })
     for ( let item of transition.inFlows ){
-      let flow = item.value.get('src') as Flow
+      let place = item.value.get('src') as ValuePlace
       let tab:any[]=[]
       for ( let v of item.list ){
         tab.push(elt.get(v))
       }  
       let value = '('+tab.join(',')+')'
-      if (value){
-        const node2 = g.createNode(value)
-        const edge = g.createEdge([value,transition.name])
+      if (tab){
+        // const node2 = g.createNode(value)
+        for ( let obj of tab ){
+         // newSymbolTable.get(place.name)?.value.delete
+          place.value.delete(obj)
+        }
+        let tab2:any[]=[]
+        for ( let objP of place.value.keys()){
+          tab2.push(objP)
+        }
+        let value2 = '('+tab2.join(',')+')'
+        const edge = g.createEdge([value2,transition.name],)
       } 
     }
       for ( let item of transition.outFlows){
         let flow = item.value.get('tgt') as Flow
+        let place = symbolTable.get(flow.name)
         let tab:any[]=[]
         for ( let v of item.list ){
           tab.push(elt.get(v))
@@ -560,11 +789,13 @@ function runTransition(transition:Transition){
           const node3 = g.createNode(value)
           const edge = g.createEdge([transition.name,value])
         }
+        console.log(flow)
       }
     i++;  
     graphToImagePng(g,'test'+i)
   }
 }
+
 
 async function writeOnFile(data: string, file: string) {
   try {

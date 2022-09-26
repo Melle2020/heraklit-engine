@@ -25,10 +25,8 @@ Money( 120Eur )
 
 
 client-with-item( Alice, shirt )
-
-
-
 client-with-item( Bob, shoes )
+
 
 
 
