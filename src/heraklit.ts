@@ -6,11 +6,11 @@ import { readFileSync, writeFileSync, promises as fsPromises } from 'fs';
 import { join } from 'path';
 import BindingsList from './BindingsList';
 import _ from "lodash";
-import { ReacheabilityGraph, ReacheableState, RGTransition } from './ReacheabilityGraph';
+import { ReachabilityGraph, ReachableState, RGTransition } from './ReachabilityGraph';
 
 
 
-const data = fs.readFileSync('./data/G2.hera', 'utf8')
+const data = fs.readFileSync('./data/G2Extend.hera', 'utf8')
 const dg = digraph('G')
 
 //Class system
@@ -435,28 +435,44 @@ function graphCreated(symbolTable: any) {
 // }
 
 function computeAllState(startState:Map<string, Symbol>){
-  // Create reacheability graph
-  let rg:ReacheabilityGraph = new ReacheabilityGraph()
+  // Create Reachability graph
+  let rg:ReachabilityGraph = new ReachabilityGraph()
   let key = generatingHeraklitString(startState)
 
-  // Add start state to reacheability graph
-  let rc: ReacheableState = new ReacheableState()
+  // Add start state to Reachability graph
+  let rc: ReachableState = new ReachableState()
+  rc.name = "startState"
   rc.symbolTable = startState
   rg.stateMap.set(key,rc)
 
   // add  start state to todoList 
-  let todoList: ReacheableState[] = []
+  let todoList: ReachableState[] = []
   todoList.push(rc)
-
+  let i=0
   // for each todoList entry expand one step
   while(todoList.length > 0){
     let currentState = todoList[0]
     todoList.splice(0,1)
     expandOneState(rg,todoList,currentState)
   }
+  //show all state in image
+  let gr = digraph('RG') 
+ for(let [key,elt] of rg.stateMap){
+    let s = elt as ReachableState
+    let node = gr.createNode(s.name) 
+    for(let t of s.outGoingTransition){
+      let target =  t.target
+      let edge = gr.createEdge([s.name,target.name])
+      
+    }
+ } 
+
+graphToImagePng(gr,'reachabilityGraph.png')
+
 }
 
-function expandOneState(g:ReacheabilityGraph,todoList:ReacheableState[],state:ReacheableState){
+function expandOneState(g:ReachabilityGraph,todoList:ReachableState[],state:ReachableState){
+
   //for each transition 
   for(let s of state.symbolTable.keys()) {
     const eSymbol = state.symbolTable.get(s) as Symbol
@@ -483,13 +499,12 @@ function expandOneState(g:ReacheabilityGraph,todoList:ReacheableState[],state:Re
       //for each binding
       for( let b of transitionBindings.bindings){
         doOneBinding(g,todoList,state,b,trans)
-
       }
     }   
   }
 }
 
-function doOneBinding(g:ReacheabilityGraph,todoList:ReacheableState[],state:ReacheableState,currentBinding:Map<string,string>,transition:Transition){
+function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:ReachableState,currentBinding:Map<string,string>,transition:Transition){
   let cloneState = _.cloneDeep(state.symbolTable)
   //Execute the binding
   let cloneTransition:Transition|undefined = undefined
@@ -532,9 +547,10 @@ function doOneBinding(g:ReacheabilityGraph,todoList:ReacheableState[],state:Reac
   let newKey = generatingHeraklitString(cloneState)
   let existingState = g.stateMap.get(newKey)
 
-  //If yes add it to the reacheability graph,add to the todoList, add transition edge (old state to new state )
+  //If yes add it to the Reachability graph,add to the todoList, add transition edge (old state to new state )
   // if yes store into disk as image(png ,svg,..) and heraklit notation
-  let rs:ReacheableState = new ReacheableState()
+  let rs:ReachableState = new ReachableState()
+  rs.name = "rs"+g.stateMap.size
   rs.symbolTable = cloneState
   if(!existingState){
     g.stateMap.set(newKey,rs)
@@ -544,7 +560,6 @@ function doOneBinding(g:ReacheabilityGraph,todoList:ReacheableState[],state:Reac
     rgt.target = rs
     state.outGoingTransition.push(rgt)
     //generate graph
-    generatingGraphState(rs,1)
 
   }
   else{
@@ -633,8 +648,8 @@ function generatingHeraklitString(state:Map<string,Symbol>){
   return fullText
 }
 
-function generatingGraphState(state:ReacheableState,i:number){
-  let dg = digraph('G'+i)
+function generatingGraphState(state:ReachableState,rg:ReachabilityGraph , key:string,i:number){
+  let dg = digraph('G')
   for(let elt of state.symbolTable.values()) {
     // const value = symbolTable.get(elt);
     if(elt._type === 'Transition') {
@@ -655,7 +670,6 @@ function generatingGraphState(state:ReacheableState,i:number){
   for ( let elt of state.symbolTable.values() ) {
     if ( elt._type === 'Transition' ) {
       let transition = elt as Transition
-      let i = 1
       for ( let item of transition.inFlows ) {
         const src = item.value.get('src')?.value.keys()
         const srcVal = "{" + item.list.join(",") + "}"
@@ -663,7 +677,6 @@ function generatingGraphState(state:ReacheableState,i:number){
         const node = dg.createEdge([ placeN, transition.name], {
           [attribute.label]: srcVal
         })
-        i++;
       }
       for ( let item of transition.outFlows ) {
         const tgt = item.value.get('tgt')?.value.keys()
@@ -672,12 +685,11 @@ function generatingGraphState(state:ReacheableState,i:number){
         const node = dg.createEdge([transition.name, placeN], {
           [attribute.label]: tgtVal
         })
-        i++;
       }
     }
   }
-
-  graphToImagePng(dg, 'S'+i)
+  
+  graphToImagePng(dg,"S"+i)
 
 }
 
@@ -794,6 +806,33 @@ function runTransition(transition:Transition){
     i++;  
     graphToImagePng(g,'test'+i)
   }
+}
+function generatingReachabilityGraph(rg:ReachabilityGraph){
+  let dg = digraph('RG')
+  let i = 0
+  for(let elt of rg.stateMap.values()) {
+    let currentState:string = 'S0'
+    i++
+    let currentOutgoingTransition:RGTransition[] = existSuccessors(elt)
+    // for(let currentOutgoingTransition of elt.outGoingTransition){ 
+    const edge = dg.createEdge([currentState,"s"+i])
+    i++;
+     
+    while(currentOutgoingTransition){
+      let j = 0
+
+    }
+    break;
+  }  
+  graphToImagePng(dg,"reachabilityGraph")
+}
+
+function existSuccessors(rs:ReachableState){
+    if(rs.outGoingTransition.length > 0){
+      return rs.outGoingTransition;
+    }else{
+      return [];
+    }
 }
 
 
