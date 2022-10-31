@@ -467,7 +467,7 @@ function computeAllState(startState:Map<string, Symbol>){
     }
  } 
 
-graphToImagePng(gr,'reachabilityGraph')
+graphToImagePng(gr,'reachabilityGraph.png')
 
 }
 
@@ -569,8 +569,9 @@ function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:Reacha
     rgt.target = existingState
 
     state.outGoingTransition.push(rgt)
+
+
   }
-  
 }
 
 function generatingHeraklitString(state:Map<string,Symbol>){
@@ -688,7 +689,7 @@ function generatingGraphState(state:ReachableState,rg:ReachabilityGraph , key:st
     }
   }
   
-  graphToImagePng(dg,"rs"+i)
+  graphToImagePng(dg,"S"+i)
 
 }
 
@@ -863,7 +864,7 @@ function graphToImagePng(g: any, imageName: string) {
   const dot = toDot(g);
   console.log(dot);
 
-  const render = CliRenderer({ outputFile: "./outPut/" + imageName + ".svg", format: "svg" });
+  const render = CliRenderer({ outputFile: "./outPut/" + imageName + ".png", format: "png" });
   -+(async () => {
     try {
       await render(
