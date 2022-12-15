@@ -1,0 +1,76 @@
+f( shoes ) = 120Eur
+f( shirt ) = 50Eur
+f( hat ) = 150Eur
+
+v( shoes ) = 10percent
+v( shirt ) = 5percent
+v( hat ) = 12percent
+
+p( shoes ) = ?
+p( shirt ) = ??
+p( hat ) = ???
+
+Place( vendor-available )
+Place( client-with-item )
+Place( vendor-with-item )
+Place( client-with-money )
+Place( client-with-voucher )
+Place( cashier-available )
+Place( vendor-packed-item )
+Place( finished-client )
+
+Transition( item-take-home )
+Transition( vendor-packs-item)
+Transition( client-pays )
+Transition( hanging-over )
+
+Flow( vendor-available, item-take-home, y )
+Flow( client-with-item, item-take-home, x, z )
+Flow( item-take-home,  vendor-with-item, y, z )
+Flow( item-take-home, client-with-money, x, m )
+
+Flow( vendor-with-item, vendor-packs-item, y, z )
+Flow( vendor-packs-item, vendor-packed-item, y, z )
+
+Flow( client-with-money, client-pays, x, m )
+Flow( client-pays, client-with-voucher, x )
+Flow( cashier-available, client-pays, c )
+Flow( client-pays, cashier-available, c )
+
+Flow( client-with-voucher, hanging-over, x )
+Flow( vendor-packed-item, hanging-over, y )
+Flow( hanging-over, finished-client, x )
+
+Equation( item-take-home, ( m ) = f( z ) )
+Equation( client-pays, ( vc ) = v( z ) )
+Equation( hanging-over, ( pck ) = p( z ) )
+
+
+vendor( v1 )
+vendor( v2 )
+cashier( C1 )
+
+vendor-available( V1 )
+vendor-available( V2 )
+
+cashier-available( C1 )
+
+client( Alice )
+Item( shirt )
+Money( 50Eur )
+client( Bob )
+Item( shoes )
+Money( 120Eur )
+client( Claire )
+Item( hat )
+Money( 150Eur )
+
+
+client-with-item( Alice, shirt )
+client-with-item( Bob, shoes )
+client-with-item( Claire, hat )
+
+
+
+
+

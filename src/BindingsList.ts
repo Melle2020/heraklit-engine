@@ -10,7 +10,11 @@ class BindingsList{
                 for(let i=0 ; i< varName.length ; i++){
 
                   let  vn = varName[i]
-                  let  vi = v[i]
+                  let  vi = v[2*i]
+                  if(vi===','){
+                    console.log('Error')
+                  }
+                  
                   newMap.set(vn,vi)
 
 
@@ -56,9 +60,18 @@ class BindingsList{
                         let paramVar =  eq.params.list[0]
                         let paramValue = oldMap.get(paramVar) || ''
                         let ass = fnDef.value.get(paramValue) as Association
-                        let resultValue = ass.result.list[0]
-                        console.log(resultValue)
-                        oldMap.set(vn,resultValue)
+                        if(!ass){
+                            continue;
+                        }
+                        try {
+                            let resultValue = ass.result.list[0]
+                            console.log(resultValue)
+                            oldMap.set(vn,resultValue)
+                        } catch (error) {
+                           console.log(error) 
+                        }
+                        
+                        
                         
                     }
                 }

@@ -10,7 +10,7 @@ import { ReachabilityGraph, ReachableState, RGTransition } from './ReachabilityG
 
 
 
-const data = fs.readFileSync('./data/G2Extend.hera', 'utf8')
+const data = fs.readFileSync('./data/G2.hera', 'utf8')
 const dg = digraph('G')
 
 //Class system
@@ -58,11 +58,7 @@ class ValuePlace extends Symbol {
 class TypeValue extends Symbol {
   declaration: Map<string, string[]> = new Map()
 }
-
-
 const lines = data.toString().replace(/\r\n/g, '\n').split('\n');
-const bindingsList = new BindingsList()
-
 
 setSymboleTableByReading(lines)
 addValueToSymbolTable(lines)
@@ -73,7 +69,7 @@ readFnAssociation()
 
 computeAllState(symbolTable)
 
-//Set all symbol in symbol table
+//Set all symbol transition and palce in symbol table
 function setSymboleTableByReading(lines: any) {
   for ( const line of lines ) {
     const tokensRegExp = /([\w-]+|\(|\)|\,)/g
@@ -100,7 +96,7 @@ function setSymboleTableByReading(lines: any) {
   }
 }
 
-//set value in symbol table
+//set value in symbol table by using flow . equation ,
 function addValueToSymbolTable(lines: any) {
   let typeValue = new TypeValue()
   for ( const line of lines ) {
@@ -274,7 +270,6 @@ function readFnAssociation(){
 
 }
 
-
 function graphCreated(symbolTable: any) {
   for ( let elt of symbolTable.keys() ) {
     const value = symbolTable.get(elt);
@@ -320,121 +315,9 @@ function graphCreated(symbolTable: any) {
 }
 
 
-// function initializedEntry(symbolTable: any, g: any) {
-//   for (let elt of symbolTable.keys()) {
-
-//     const value = symbolTable.get(elt);
-//     if (value._type === 'Transition') {
-//       //get all edges of graph
-//       let gEdge = g.edges
-//       //find all entry flows
-//       for (let item of value.inFlows) {
-//         const src = item.value.get('src').name
-//         // const srcVal="{"+item.var.join(",")+"}"
-//         // check all edge
-//         let i = 0
-//         for (let val of gEdge) {
-//           if (src === val.targets[0].id) {
-
-//             const place = symbolTable.get(src)
-
-//             let key = ''
-//             if (place._type === 'Place') {
-//               // key =  place.value.keys().join(", ")
-//               for (let k of place.value.keys()) {
-//                 key += k + ' '
-//               }
-
-//               // const placevalue = place.value.get(key).list
-//               // gEdge[i].targets[0].port = gEdge[i].targets[0].id
-//               // gEdge[i].targets[0].id = gEdge[i].targets[0].id.replace(val.targets[0].id, "(" + placevalue.join("") + ")")
-
-
-//             }
-
-
-//           }
-//           i++
-//         }
-
-//       }
-
-
-//       for (let item of value.outFlows) {
-//         const tgt = item.value.get('tgt').name
-
-//         // check all edge
-//         let i = 0
-//         for (let val of gEdge) {
-//           if (tgt === val.targets[1].id) {
-
-//             const place = symbolTable.get(tgt)
-
-//             let key = ''
-
-//             if (place._type === 'Place') {
-
-//               for (let k of place.value.keys()) {
-//                 key = k
-//               }
-//               // const placevalue = place.value.get(key).list
-//               // gEdge[i].targets[1].port = gEdge[i].targets[1].id
-//               // gEdge[i].targets[1].id = gEdge[i].targets[1].id.replace(val.targets[1].id, "")
-
-
-//             }
-
-
-//           }
-//           i++
-//         }
-//       }
-
-//     }
-
-//   }
-
-//   graphToImagePng(g, 'InitVal')
-
-
-
-// }
-
-//run transition
-// function checkAllTransition(symbolTable: any) {
-
-//   for(let s of symbolTable.keys()) {
-
-//     const eSymbol = symbolTable.get(s)
-//     if (eSymbol._type === 'Transition') {
-//       let trans: Transition;
-//       trans = eSymbol as Transition
-
-//       for (let flow of trans.inFlows) {
-//         let place = flow.value.get('src') as Symbol
-//         let varList = flow.list
-//         let valueList = []
-//         for (let v of place?.value.values()) {
-//           let vp = v as ValuePlace
-//           valueList.push(vp.list)
-
-//         }
-//         bindingsList.expand(varList, valueList)
-
-//       }
-
-//       for (let flow of trans.outFlows) {
-//         let place = flow.value.get('tgt') as Symbol
-//         let varList = flow.list
-//         bindingsList.expandOut(varList, symbolTable, trans)
-
-//       }
-//     }
-
-//   }
-// }
 
 function computeAllState(startState:Map<string, Symbol>){
+  
   // Create Reachability graph
   let rg:ReachabilityGraph = new ReachabilityGraph()
   let key = generatingHeraklitString(startState)
@@ -444,6 +327,7 @@ function computeAllState(startState:Map<string, Symbol>){
   rc.name = "startState"
   rc.symbolTable = startState
   rg.stateMap.set(key,rc)
+  generatingGraphState(rc,rg, key,0)
 
   // add  start state to todoList 
   let todoList: ReachableState[] = []
@@ -455,16 +339,21 @@ function computeAllState(startState:Map<string, Symbol>){
     todoList.splice(0,1)
     expandOneState(rg,todoList,currentState)
   }
+  
   //show all state in image
   let gr = digraph('RG') 
  for(let [key,elt] of rg.stateMap){
     let s = elt as ReachableState
-    let node = gr.createNode(s.name) 
+    let node = gr.createNode(s.name,{
+      [attribute.URL]: "./rs"+i+".svg",
+    }) 
     for(let t of s.outGoingTransition){
       let target =  t.target
       let edge = gr.createEdge([s.name,target.name])
       
     }
+    // generatingGraphState(elt,rg, key,i)
+    // i++
  } 
 
 graphToImagePng(gr,'reachabilityGraph')
@@ -505,6 +394,7 @@ function expandOneState(g:ReachabilityGraph,todoList:ReachableState[],state:Reac
 }
 
 function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:ReachableState,currentBinding:Map<string,string>,transition:Transition){
+
   let cloneState = _.cloneDeep(state.symbolTable)
   //Execute the binding
   let cloneTransition:Transition|undefined = undefined
@@ -516,6 +406,9 @@ function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:Reacha
   }
   if(!cloneTransition ) {
     return
+  }
+  if(cloneTransition.name==='vendor-packs-item'){
+    console.log('vendor-packs-item')
   }
   for(let item of cloneTransition.inFlows){
     let place = item.value.get('src') as ValuePlace
@@ -560,6 +453,7 @@ function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:Reacha
     rgt.target = rs
     state.outGoingTransition.push(rgt)
     //generate graph
+    generatingGraphState(state,g,newKey,g.stateMap.size)
 
   }
   else{
@@ -570,6 +464,8 @@ function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:Reacha
 
     state.outGoingTransition.push(rgt)
   }
+
+  
   
 }
 
@@ -692,45 +588,6 @@ function generatingGraphState(state:ReachableState,rg:ReachabilityGraph , key:st
 
 }
 
-
-// async function writeHeraklitSymbolTable(symbolTable: any, g: any) {
-
-//   let data = ""
-//   for (let trans of g.nodes) {
-//     //Adding all place
-//     for (let e of g.edges) {
-
-//       if (e.targets[0].id === trans.id) {
-
-//         data = data + 'Place( ' + e.targets[1].port + ' )' + '\n'
-//       }
-//       else if (e.targets[1].id === trans.id) {
-//         data = data + 'Place( ' + e.targets[0].port + ' )' + '\n'
-
-//       }
-
-//     }
-
-//     data = data + 'Transition( ' + trans.id + ' )' + '\n'
-//     for (let e of g.edges) {
-
-
-
-//       data = data + 'Flow( ' + (e.targets[0].port || e.targets[0].id) + ', ' + (e.targets[1].port || e.targets[1].id) + ')' + '\n'
-
-
-
-//     }
-
-//   }
-//   writeOnFile(data, 'G3.hera')
-
-
-//   // data=data+'Transition( '+trans.id+ ' )'+'\n'
-
-
-// }
-
 // function createGraphByStep(){
 //   for ( let [elt , val] of symbolTable ){
 //     if ( val._type === 'Transition' ){
@@ -759,81 +616,80 @@ function generatingGraphState(state:ReachableState,rg:ReachabilityGraph , key:st
 
 // }
 
-function runTransition(transition:Transition){
-  let i=1
-  let newSymbolTable:Map<string,Symbol>=new Map(symbolTable)
-  for ( let elt of bindingsList?.bindings ){
-    const g = digraph('G'+i);
-    const node = g.createNode(transition.name,{
-      [attribute.shape]: "box",
-    })
-    for ( let item of transition.inFlows ){
-      let place = item.value.get('src') as ValuePlace
-      let tab:any[]=[]
-      for ( let v of item.list ){
-        tab.push(elt.get(v))
-      }  
-      let value = '('+tab.join(',')+')'
-      if (tab){
-        // const node2 = g.createNode(value)
-        for ( let obj of tab ){
-         // newSymbolTable.get(place.name)?.value.delete
-          place.value.delete(obj)
-        }
-        let tab2:any[]=[]
-        for ( let objP of place.value.keys()){
-          tab2.push(objP)
-        }
-        let value2 = '('+tab2.join(',')+')'
-        const edge = g.createEdge([value2,transition.name],)
-      } 
-    }
-      for ( let item of transition.outFlows){
-        let flow = item.value.get('tgt') as Flow
-        let place = symbolTable.get(flow.name)
-        let tab:any[]=[]
-        for ( let v of item.list ){
-          tab.push(elt.get(v))
-        }  
-        let value = '('+tab.join(',')+')'
-        if ( value){
-          const node3 = g.createNode(value)
-          const edge = g.createEdge([transition.name,value])
-        }
-        console.log(flow)
-      }
-    i++;  
-    graphToImagePng(g,'test'+i)
-  }
-}
-function generatingReachabilityGraph(rg:ReachabilityGraph){
-  let dg = digraph('RG')
-  let i = 0
-  for(let elt of rg.stateMap.values()) {
-    let currentState:string = 'S0'
-    i++
-    let currentOutgoingTransition:RGTransition[] = existSuccessors(elt)
-    // for(let currentOutgoingTransition of elt.outGoingTransition){ 
-    const edge = dg.createEdge([currentState,"s"+i])
-    i++;
+// function runTransition(transition:Transition){
+//   let i=1
+//   let newSymbolTable:Map<string,Symbol>=new Map(symbolTable)
+//   for ( let elt of bindingsList?.bindings ){
+//     const g = digraph('G'+i);
+//     const node = g.createNode(transition.name,{
+//       [attribute.shape]: "box",
+//     })
+//     for ( let item of transition.inFlows ){
+//       let place = item.value.get('src') as ValuePlace
+//       let tab:any[]=[]
+//       for ( let v of item.list ){
+//         tab.push(elt.get(v))
+//       }  
+//       let value = '('+tab.join(',')+')'
+//       if (tab){
+//         // const node2 = g.createNode(value)
+//         for ( let obj of tab ){
+//          // newSymbolTable.get(place.name)?.value.delete
+//           place.value.delete(obj)
+//         }
+//         let tab2:any[]=[]
+//         for ( let objP of place.value.keys()){
+//           tab2.push(objP)
+//         }
+//         let value2 = '('+tab2.join(',')+')'
+//         const edge = g.createEdge([value2,transition.name],)
+//       } 
+//     }
+//       for ( let item of transition.outFlows){
+//         let flow = item.value.get('tgt') as Flow
+//         let place = symbolTable.get(flow.name)
+//         let tab:any[]=[]
+//         for ( let v of item.list ){
+//           tab.push(elt.get(v))
+//         }  
+//         let value = '('+tab.join(',')+')'
+//         if ( value){
+//           const node3 = g.createNode(value)
+//           const edge = g.createEdge([transition.name,value])
+//         }
+//         console.log(flow)
+//       }
+//     i++;  
+//     graphToImagePng(g,'test'+i)
+//   }
+// }
+// function generatingReachabilityGraph(rg:ReachabilityGraph){
+//   let dg = digraph('RG')
+//   let i = 0
+//   for(let elt of rg.stateMap.values()) {
+//     let currentState:string = 'S0'
+//     i++
+//     let currentOutgoingTransition:RGTransition[] = existSuccessors(elt)
+//     // for(let currentOutgoingTransition of elt.outGoingTransition){ 
+//     const edge = dg.createEdge([currentState,"s"+i])
+//     i++;
      
-    while(currentOutgoingTransition){
-      let j = 0
+//     while(currentOutgoingTransition){
+//       let j = 0
 
-    }
-    break;
-  }  
-  graphToImagePng(dg,"reachabilityGraph")
-}
+//     }
+//     break;
+//   }  
+//   graphToImagePng(dg,"reachabilityGraph")
+// }
 
-function existSuccessors(rs:ReachableState){
-    if(rs.outGoingTransition.length > 0){
-      return rs.outGoingTransition;
-    }else{
-      return [];
-    }
-}
-
+// function existSuccessors(rs:ReachableState){
+//     if(rs.outGoingTransition.length > 0){
+//       return rs.outGoingTransition;
+//     }else{
+//       return [];
+//     }
+// }
 
 async function writeOnFile(data: string, file: string) {
   try {
@@ -855,16 +711,12 @@ async function writeOnFile(data: string, file: string) {
 
 }
 
-// console.log(g)
-
-
-
+//convert dot file to png
 function graphToImagePng(g: any, imageName: string) {
   const dot = toDot(g);
-  console.log(dot);
 
-  const render = CliRenderer({ outputFile: "./outPut/" + imageName + ".svg", format: "svg" });
-  -+(async () => {
+  const render = CliRenderer({ outputFile: "./output/" + imageName + ".svg", format: "svg" });
+  (async () => {
     try {
       await render(
         dot
