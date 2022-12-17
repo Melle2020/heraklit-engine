@@ -585,7 +585,7 @@ function generatingGraphState(state:ReachableState,rg:ReachabilityGraph , key:st
     }
   }
   
-  graphToImagePng(dg,"rs"+i)
+  graphToImagePng(dg,state.name)
 
 }
 
