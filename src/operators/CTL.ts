@@ -6,40 +6,40 @@ class ExistFinallyOperator {
     todo:ReachableState[] = [];
     done:ReachableState[] = []
 
-    find(start:ReachableState,predicate:Function){
-        this.todo.push(start);
-        while (!(this.todo.length === 0)){
+//     find(start:ReachableState,predicate:Function){
+//         this.todo.push(start);
+//         while (!(this.todo.length === 0)){
 
-            let  currentState:ReachableState = this.todo.delete(0);
-            this.done.push(currentState);
-            let foundIt:boolean = predicate.test(currentState);
-            if (foundIt) {
-                // construct the example path
+//             let  currentState:ReachableState = this.todo.delete(0);
+//             this.done.push(currentState);
+//             let foundIt:boolean = predicate.test(currentState);
+//             if (foundIt) {
+//                 // construct the example path
 
-                return true;
-            }
+//                 return true;
+//             }
 
-            // go for successors
-            for(let next of currentState.successors()) {
+//             // go for successors
+//             for(let next of currentState.successors()) {
                 
-                if ( ! this.done.includes(next)) {
-                   let nextPath:ReachableState[] = [];
-                    nextPath.push([currentPath...]);
-                    nextPath.push(next);
-                    this.todo.push(nextPath);
+//                 if ( ! this.done.includes(next)) {
+//                    let nextPath:ReachableState[] = [];
+//                     nextPath.push([currentPath...]);
+//                     nextPath.push(next);
+//                     this.todo.push(nextPath);
                     
 
-            }
+//             }
 
-        }
+//         }
 
-        return false;
-
-
-    }
+//         return false;
 
 
-}
+//     }
+
+
+// }
 
 
 // ArrayList<ReachableState> example = new ArrayList<>();
@@ -90,3 +90,5 @@ class ExistFinallyOperator {
 
 
 // }
+
+}

@@ -7,17 +7,17 @@ const ts_graphviz_1 = require("ts-graphviz");
 const fs_1 = __importDefault(require("fs"));
 const graphviz_cli_renderer_1 = require("@diagrams-ts/graphviz-cli-renderer");
 const g = (0, ts_graphviz_1.digraph)('G');
-const data = fs_1.default.readFileSync('logicLanguage.txt', 'utf8');
+const data = fs_1.default.readFileSync('./data/system2.hera', 'utf8');
 const symbolTable = new Map();
 const lines = data.toString().replace(/\r\n/g, '\n').split('\n');
 for (const line of lines) {
     const tokensRegExp = /([\w-]+|\(|\)|\,)/g;
     const tokenList = line.match(tokensRegExp);
-    console.log("token list: " + JSON.stringify(tokenList));
+    // console.log("token list: " + JSON.stringify(tokenList))
     const openBracePos = line.indexOf('(');
     const closeBracePos = line.indexOf(')');
     const relName = line.substring(0, openBracePos);
-    console.log("IS" + relName);
+    // console.log(relName)
     const params = line.substring(openBracePos + 1, closeBracePos);
     const words = params.split(',');
     const name = words[0].trim();
@@ -51,10 +51,20 @@ for (const line of lines) {
         const srcObj = symbolTable.get(srcName);
         const tgtObj = symbolTable.get(tgtName);
         if (srcObj['_type'] === "Place") {
-            tgtObj["inFlows"].push(srcName);
+            if (words.length === 3) {
+                tgtObj["inFlows"].push(srcName + "*" + words[2]);
+            }
+            else {
+                tgtObj["inFlows"].push(srcName + "*" + words[2] + "*" + words[3]);
+            }
         }
         else if (srcObj["_type"] === "Transition") {
-            srcObj["outFlows"].push(tgtName);
+            if (words.length === 3) {
+                srcObj["outFlows"].push(tgtName + "*" + words[2]);
+            }
+            else {
+                srcObj["outFlows"].push(tgtName + "*" + words[2] + "*" + words[3]);
+            }
         }
     }
 }
@@ -76,8 +86,13 @@ for (const line of lines) {
     const params = line.substring(openBracePos + 1, closeBracePos);
     const words = params.split(',');
 }
+// draw(symbolTable, "G1.svg"){
+// }
+// executeOneTransion(symbolTable)
+// writeHeraklit(symbolTable, "G2.hera")
+// draw(symbolTable, "G2.svg")
 //reander graph on png
-const render = (0, graphviz_cli_renderer_1.CliRenderer)({ outputFile: "./outPut/render12.png", format: "png" });
+const render = (0, graphviz_cli_renderer_1.CliRenderer)({ outputFile: "./outPut/render18.png", format: "png" });
 // Begin to create graph
 const subgraphA = g.createSubgraph('A');
 for (let elt of symbolTable.keys()) {
@@ -88,32 +103,7 @@ for (let elt of symbolTable.keys()) {
         });
     }
     else {
-        if (value._id.indexOf('available') != -1) {
-            const tabElt = elt.split('-');
-            tabElt.pop();
-            const node = g.createNode(elt, { [ts_graphviz_1.attribute.label]: tabElt.join(value.values[0]) });
-        }
-        else if (value._id.indexOf('client-with-item-2') != -1) {
-            const tabElt = elt.split('-');
-            tabElt.pop();
-            // console.log('values'+JSON.stringify(value.values))
-            const node = g.createNode(elt, { [ts_graphviz_1.attribute.label]: value.values.join(' wants a') });
-        }
-        else if (value._id.indexOf('vendor-with-item-3') != -1) {
-            const tabElt = elt.split('-');
-            tabElt.pop();
-            // console.log('values'+JSON.stringify(value.values))
-            const node = g.createNode(elt, { [ts_graphviz_1.attribute.label]: value.values.join(' with') });
-        }
-        else if (value._id.indexOf('client-with-item-4') != -1) {
-            const tabElt = elt.split('-');
-            tabElt.pop();
-            console.log('values' + JSON.stringify(value.values));
-            const node = g.createNode(elt, { [ts_graphviz_1.attribute.label]: value.values.join(' with') });
-        }
-        //  else{
-        //     const node=g.createNode(elt,{[attribute.label]: value.values.join(' with')})
-        //  }
+        //  const node=g.createNode(elt,{[attribute.label]: " test"})
     }
 }
 for (let elt of symbolTable.keys()) {
@@ -121,26 +111,38 @@ for (let elt of symbolTable.keys()) {
     console.log("Value" + JSON.stringify(symbolTable.get(elt)));
     const value = symbolTable.get(elt);
     if (value._type === 'Transition') {
+        let i = 1;
         for (let item of value.inFlows) {
-            const node = g.createEdge([item, elt]);
+            const words = item.split('*');
+            if (words.length === 2) {
+                const node = g.createEdge(["" + i + "", elt], {
+                    [ts_graphviz_1.attribute.label]: words[1]
+                });
+            }
+            else {
+                const node = g.createEdge(["" + i + "", elt], {
+                    [ts_graphviz_1.attribute.label]: "(" + words[1] + ", " + words[2] + ")"
+                });
+            }
+            i++;
         }
         for (let item of value.outFlows) {
-            const node = g.createEdge([elt, item]);
+            const words = item.split('*');
+            // const node=g.createEdge([elt,item])
+            if (words.length === 2) {
+                const node = g.createEdge([elt, "" + i + ""], {
+                    [ts_graphviz_1.attribute.label]: words[1]
+                });
+            }
+            else {
+                const node = g.createEdge([elt, "" + i + ""], {
+                    [ts_graphviz_1.attribute.label]: "(" + words[1] + " ," + words[2] + ")"
+                });
+            }
+            i++;
         }
     }
 }
-// const nodeA1 = subgraphA.createNode('A_node1',{
-//     [attribute.shape]: "box",
-//   });
-// const nodeA2 = subgraphA.createNode('A_node2');
-// subgraphA.createEdge([nodeA1, nodeA2]);
-// const subgraphB = g.createSubgraph('B');
-// const nodeB1 = subgraphB.createNode('B_node1');
-// const nodeB2 = subgraphB.createNode('B_node2');
-// subgraphA.createEdge([nodeB1, nodeB2]);
-// const node1 = g.createNode('node1');
-// const node2 = g.createNode('node2');
-// g.createEdge([node1, node2]);
 const dot = (0, ts_graphviz_1.toDot)(g);
 console.log(dot);
 (async () => {

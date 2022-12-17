@@ -10,7 +10,7 @@ import { ReachabilityGraph, ReachableState, RGTransition } from './ReachabilityG
 
 
 
-const data = fs.readFileSync('./data/G2.hera', 'utf8')
+const data = fs.readFileSync('src\\data\\G2.hera', 'utf8')
 const dg = digraph('G')
 
 //Class system
@@ -345,15 +345,16 @@ function computeAllState(startState:Map<string, Symbol>){
  for(let [key,elt] of rg.stateMap){
     let s = elt as ReachableState
     let node = gr.createNode(s.name,{
-      [attribute.URL]: "./rs"+i+".svg",
+      [attribute.URL]: "./"+s.name+".svg",
     }) 
     for(let t of s.outGoingTransition){
       let target =  t.target
-      let edge = gr.createEdge([s.name,target.name])
-      
+      let edge = gr.createEdge([s.name,target.name],{
+        [attribute.label]: t.name
+      }) 
     }
     // generatingGraphState(elt,rg, key,i)
-    // i++
+    console.log("test")
  } 
 
 graphToImagePng(gr,'reachabilityGraph')
@@ -715,7 +716,7 @@ async function writeOnFile(data: string, file: string) {
 function graphToImagePng(g: any, imageName: string) {
   const dot = toDot(g);
 
-  const render = CliRenderer({ outputFile: "./output/" + imageName + ".svg", format: "svg" });
+  const render = CliRenderer({ outputFile: "src\\output\\" + imageName + ".svg", format: "svg" });
   (async () => {
     try {
       await render(
