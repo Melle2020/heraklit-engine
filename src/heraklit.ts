@@ -11,7 +11,7 @@ import {ExistFinallyOperator}from './operators/CTL'
 
 
 
-const data = fs.readFileSync('src\\data\\G2Extend.hera', 'utf8')
+const data = fs.readFileSync('src/data/G2.hera', 'utf8')
 const dg = digraph('G')
 
 //Class system
@@ -601,7 +601,8 @@ async function writeOnFile(data: string, file: string) {
 //convert dot file to png
 function graphToImagePng(g: any, imageName: string) {
   const dot = toDot(g);
-  const render = CliRenderer({ outputFile: "src\\output\\takehome" + imageName + ".svg", format: "svg" });
+
+  const render = CliRenderer({ outputFile: "src\\output\\" + imageName + ".svg", format: "svg" });
   (async () => {
     try {
       await render(
