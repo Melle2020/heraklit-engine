@@ -1,8 +1,7 @@
-import { attribute, Digraph, digraph, Dot, graph, toDot } from 'ts-graphviz';
+import { attribute,digraph,toDot } from 'ts-graphviz';
 import fs from "fs"
-
 import { CliRenderer } from "@diagrams-ts/graphviz-cli-renderer";
-import { readFileSync, writeFileSync, promises as fsPromises } from 'fs';
+import {promises as fsPromises } from 'fs';
 import { join } from 'path';
 import BindingsList from './BindingsList';
 import _ from "lodash";
@@ -16,15 +15,14 @@ const dg = digraph('G')
 
 //Class system
 const symbolTable: Map<string, Symbol> = new Map();
-class Symbol {
+export class Symbol {
   name!: string
   _type!: string
   value: Map<string, Symbol> = new Map()
 }
 
-export { Symbol, Transition , Association}
 
-class Transition extends Symbol {
+ export class Transition extends Symbol {
   inFlows: Flow[] = []
   outFlows: Flow[] = []
   equations: Map<string, definition> = new Map()
@@ -35,7 +33,7 @@ class Flow extends Symbol {
   list: string[] = []
 }
 
-class Association extends Symbol  {
+export class Association extends Symbol  {
   params!: Params
   result!: Result
 }
@@ -454,10 +452,7 @@ function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:Reacha
     rgt.target = existingState
 
     state.outGoingTransition.push(rgt)
-  }
-
-  
-  
+  }  
 }
 
 function generatingHeraklitString(state:Map<string,Symbol>){

@@ -1,7 +1,0 @@
-Flow( vendor-available, take-home ,y )
-Flow( client-with-item, take-home, x, z )
-Flow( take-home,  vendor-with-item, y, z )
-Flow( take-home, client-with-money, x, m )
-m= f( x )
-
-

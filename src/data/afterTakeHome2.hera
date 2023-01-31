@@ -1,5 +1,0 @@
-
-vendor-available( V2 )
-f( shirt ) = 50Eur
-vendor-with-item( V1, shirt )
-client-with-money( Alice, 50EUR )

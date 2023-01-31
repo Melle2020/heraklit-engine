@@ -1,4 +1,4 @@
-import { Association, Symbol, Transition } from "./heraklit"
+import { Association, Symbol, Transition } from "./models"
 
 class BindingsList{
     bindings:Map<string,string>[]=[]
