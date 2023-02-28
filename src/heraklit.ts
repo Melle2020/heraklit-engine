@@ -6,7 +6,7 @@ import { join } from 'path';
 import BindingsList from './BindingsList';
 import _ from "lodash";
 import { ReachabilityGraph, ReachableState, RGTransition } from './ReachabilityGraph';
-import {ExistFinallyOperator}from './operators/CTL'
+import { ExistFinallyOperator } from './operators/CTL'
 
 
 
@@ -69,8 +69,6 @@ computeAllState(symbolTable)
 //Set all symbol transition and place in symbol table
 function setSymboleTableByReading(lines: any) {
   for ( const line of lines ) {
-    const tokensRegExp = /([\w-]+|\(|\)|\,)/g
-    const tokenList = line.match(tokensRegExp)
     const openBracePos = line.indexOf('(');
     const closeBracePos = line.indexOf(')');
     const relName = line.substring(0, openBracePos);
@@ -103,12 +101,10 @@ function addValueToSymbolTable(lines: any) {
       continue;
     }
     const openBracePos = line.indexOf('(');
-    const closeBracePos = line.indexOf(')');
     const relName = line.substring(0, openBracePos);
     if (relName === 'Place' || relName === 'Transition') {
       continue;
     }
-    const params = line.substring(openBracePos + 1, closeBracePos)
     if (relName === 'Flow') {
       const srcName = tokenList[2]
       const trgName = tokenList[4]
@@ -206,20 +202,8 @@ function getValueByKey(lines: any) {
       }
       symbolTable.get(valueSymbol.name)?.value.set(name, val)
     } else {
-      // if ( !valueSymbol) {
-      //  let  typeSymbol = new typeValue() as Symbol
-      //   console.log(valueSymbol)
-      //   symbolTable.set(relname,{
-
-      //   })
-
-
-      // }
-
 
     }
-
-    // console.log(symbolTable)
   }
   console.log(symbolTable)
 }
@@ -233,7 +217,6 @@ function readFnAssociation(){
     const relName = line.substring(0, openBracePos);
     const params = line.substring(openBracePos + 1, closeBracePos)
     const words: any[] = params.split(',')
-    const name = words[0].trim()
 
     if( relName === 'Place' || relName === 'Transition' || relName === 'Flow' || relName === 'Equation' ){
       continue;
@@ -284,7 +267,6 @@ function graphCreated(symbolTable: any) {
     if ( value._type === 'Transition' ) {
       let i = 1
       for ( let item of value.inFlows ) {
-        const src = item.value.get('src').value.keys()
         const srcVal = "{" + item.list.join(",") + "}"
         const node = dg.createEdge([item.value.get('src').name, elt], {
           [attribute.label]: srcVal
@@ -292,7 +274,6 @@ function graphCreated(symbolTable: any) {
         i++;
       }
       for ( let item of value.outFlows ) {
-        const tgt = item.value.get('tgt').value.keys()
         const tgtVal = "{" + item.list.join(",") + "}"
         const node = dg.createEdge([elt, item.value.get('tgt').name], {
           [attribute.label]: tgtVal
@@ -369,7 +350,6 @@ function expandOneState(g:ReachabilityGraph,todoList:ReachableState[],state:Reac
         transitionBindings.expand(varList, valueList)
       }
       for (let flow of trans.outFlows) {
-        let place = flow.value.get('tgt') as Symbol
         let varList = flow.list
         transitionBindings.expandOut(varList, symbolTable, trans)
       }
@@ -396,9 +376,6 @@ function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:Reacha
   if(!cloneTransition ) {
     return
   }
-  // if(cloneTransition.name==='vendor-packs-item'){
-  //   console.log('vendor-packs-item')
-  // }
   for(let item of cloneTransition.inFlows){
     let place = item.value.get('src') as ValuePlace
     let tab:any[]=[]
@@ -413,14 +390,11 @@ function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:Reacha
   for(let item of cloneTransition.outFlows){
     let vP = item.value.get('tgt') as ValuePlace
     let newOutput = new ValuePlace()
-    let tab:any[]=[]
     for ( let v of item.list ){
       let valCurr = currentBinding.get(v) as string
       newOutput.list.push(valCurr)   
       newOutput.list.push(','  )
     }
-    let list:string[]
-    list = newOutput.list
     newOutput.list.splice(-1,1) 
     vP.value.set(newOutput.list[0],newOutput)  
   }
@@ -552,7 +526,6 @@ function generatingGraphState(state:ReachableState,rg:ReachabilityGraph , key:st
     if ( elt._type === 'Transition' ) {
       let transition = elt as Transition
       for ( let item of transition.inFlows ) {
-        const src = item.value.get('src')?.value.keys()
         const srcVal = "{" + item.list.join(",") + "}"
         const placeN:string = item.value?.get('src')?.name as string
         const node = dg.createEdge([ placeN, transition.name], {
@@ -618,12 +591,11 @@ function V1ShoesPredicate(state:ReachableState){
         }
   }
   for(const place of places) {
-    console.log(places)
     for(const item of place.value.values()){
      let values  = item as ValuePlace
     }
     
-    // if(place.value.f(arr => compare(arr, ['V1', 'shoes'])) !== -1) {
+    // if(place.value.f(arr => (arr, ['V1', 'shoes'])) !== -1) {
     //   return true
     // }
   }

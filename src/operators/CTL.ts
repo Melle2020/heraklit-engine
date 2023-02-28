@@ -24,9 +24,8 @@ export class ExistFinallyOperator {
             for(let next of currentState.outGoingTransition) {
                 if ( ! this.done.includes(next.target)) {
                    let nextPath = [...currentPath]
-                   console.log(nextPath)
-                    nextPath.push(next.target);
-                    this.todo.push(nextPath);
+                   nextPath.push(next.target);
+                   this.todo.push(nextPath);
                 }
             }
         return false;

@@ -1,4 +1,4 @@
-import { Association, Symbol, Transition } from "./heraklit"
+import { Symbol } from "./heraklit"
 
 class RGTransition{
     name!:string
