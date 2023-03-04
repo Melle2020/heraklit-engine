@@ -296,7 +296,7 @@ function computeAllState(startState:Map<string, Symbol>){
 
   // Add start state to Reachability graph
   let rc: ReachableState = new ReachableState()
-  rc.name = "startState"
+  rc.name = "intitialstate"
   rc.symbolTable = startState
   rg.stateMap.set(key,rc)
   generatingGraphState(rc,rg, key,0)
@@ -309,6 +309,7 @@ function computeAllState(startState:Map<string, Symbol>){
   while(todoList.length > 0){
     let currentState = todoList[0]
     todoList.splice(0,1)
+    console.log('here')
     expandOneState(rg,todoList,currentState)
   }
   //show all state in image
@@ -330,7 +331,6 @@ function computeAllState(startState:Map<string, Symbol>){
 }
 
 function expandOneState(g:ReachabilityGraph,todoList:ReachableState[],state:ReachableState){
-
   //for each transition 
   for(let s of state.symbolTable.keys()) {
     const eSymbol = state.symbolTable.get(s) as Symbol
@@ -359,12 +359,12 @@ function expandOneState(g:ReachabilityGraph,todoList:ReachableState[],state:Reac
       }
     }   
   }
+  console.log("test")
 }
 
 function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:ReachableState,currentBinding:Map<string,string>,transition:Transition){
 
   let cloneState = _.cloneDeep(state.symbolTable)
-  console.log(cloneState)
   //Execute the binding
   let cloneTransition:Transition|undefined = undefined
   for(let symbol of cloneState.values()){
@@ -409,24 +409,22 @@ function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:Reacha
   rs.name = "rs"+g.stateMap.size
   rs.symbolTable = cloneState
   if(!existingState){
+    console.log("here")
     g.stateMap.set(newKey,rs)
     todoList.push(rs)
     let rgt:RGTransition = new RGTransition ()
     rgt.name = transition.name
     rgt.target = rs
     state.outGoingTransition.push(rgt)
-    //generate graph
-    generatingGraphState(state,g,newKey,g.stateMap.size)
-
   }
   else{
      // else add this transition into a old state 
     let rgt:RGTransition = new RGTransition ()
     rgt.name = transition.name
     rgt.target = existingState
-
     state.outGoingTransition.push(rgt)
   }  
+  generatingGraphState(state,g,newKey,g.stateMap.size)
 }
 
 function generatingHeraklitString(state:Map<string,Symbol>){
@@ -504,6 +502,8 @@ function generatingHeraklitString(state:Map<string,Symbol>){
 }
 
 function generatingGraphState(state:ReachableState,rg:ReachabilityGraph , key:string,i:number){
+  i=0
+  console.log(i++)
   let dg = digraph('G')
   for(let elt of state.symbolTable.values()) {
     // const value = symbolTable.get(elt);
