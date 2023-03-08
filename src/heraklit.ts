@@ -296,7 +296,7 @@ function computeAllState(startState:Map<string, Symbol>){
 
   // Add start state to Reachability graph
   let rc: ReachableState = new ReachableState()
-  rc.name = "intitialstate"
+  rc.name = "rs"
   rc.symbolTable = startState
   rg.stateMap.set(key,rc)
   generatingGraphState(rc,rg, key,0)
@@ -359,7 +359,6 @@ function expandOneState(g:ReachabilityGraph,todoList:ReachableState[],state:Reac
       }
     }   
   }
-  console.log("test")
 }
 
 function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:ReachableState,currentBinding:Map<string,string>,transition:Transition){
@@ -408,21 +407,25 @@ function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:Reacha
   let rs:ReachableState = new ReachableState()
   rs.name = "rs"+g.stateMap.size
   rs.symbolTable = cloneState
+  console.log("herer")
   if(!existingState){
     console.log("here")
     g.stateMap.set(newKey,rs)
     todoList.push(rs)
+    rs.name = state.name + state.outGoingTransition.length || "rs"+g.stateMap.size
     let rgt:RGTransition = new RGTransition ()
     rgt.name = transition.name
     rgt.target = rs
     state.outGoingTransition.push(rgt)
   }
   else{
+    
      // else add this transition into a old state 
     let rgt:RGTransition = new RGTransition ()
     rgt.name = transition.name
     rgt.target = existingState
     state.outGoingTransition.push(rgt)
+    console.log("herer")
   }  
   generatingGraphState(state,g,newKey,g.stateMap.size)
 }
