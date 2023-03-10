@@ -4,9 +4,10 @@ import { CliRenderer } from "@diagrams-ts/graphviz-cli-renderer";
 import {promises as fsPromises } from 'fs';
 import { join } from 'path';
 import BindingsList from './BindingsList';
-import _ from "lodash";
+import _, { values } from "lodash";
 import { ReachabilityGraph, ReachableState, RGTransition } from './ReachabilityGraph';
 import { ExistFinallyOperator } from './operators/CTL'
+import test from 'node:test';
 
 
 
@@ -57,6 +58,7 @@ class ValuePlace extends Symbol {
 class TypeValue extends Symbol {
   declaration: Map<string, string[]> = new Map()
 }
+
 const lines = data.toString().replace(/\r\n/g, '\n').split('\n');
 
 setSymboleTableByReading(lines)
@@ -293,14 +295,12 @@ function computeAllState(startState:Map<string, Symbol>){
   // Create Reachability graph
   let rg:ReachabilityGraph = new ReachabilityGraph()
   let key = generatingHeraklitString(startState)
-
   // Add start state to Reachability graph
   let rc: ReachableState = new ReachableState()
   rc.name = "rs"
   rc.symbolTable = startState
   rg.stateMap.set(key,rc)
-  generatingGraphState(rc,rg, key,0)
-
+  generatingGraphState(rc)
   // add  start state to todoList 
   let todoList: ReachableState[] = []
   todoList.push(rc)
@@ -309,8 +309,10 @@ function computeAllState(startState:Map<string, Symbol>){
   while(todoList.length > 0){
     let currentState = todoList[0]
     todoList.splice(0,1)
-    console.log('here')
     expandOneState(rg,todoList,currentState)
+  }
+  for(let [stateKey,stateItem] of rg.stateMap){
+    generatingGraphState(stateItem)
   }
   //show all state in image
   let gr = digraph('RG') 
@@ -362,7 +364,6 @@ function expandOneState(g:ReachabilityGraph,todoList:ReachableState[],state:Reac
 }
 
 function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:ReachableState,currentBinding:Map<string,string>,transition:Transition){
-
   let cloneState = _.cloneDeep(state.symbolTable)
   //Execute the binding
   let cloneTransition:Transition|undefined = undefined
@@ -401,33 +402,28 @@ function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:Reacha
   //is it a new state?
   let newKey = generatingHeraklitString(cloneState)
   let existingState = g.stateMap.get(newKey)
+  console.log(existingState)
 
   //If yes add it to the Reachability graph,add to the todoList, add transition edge (old state to new state )
   // if yes store into disk as image(png ,svg,..) and heraklit notation
   let rs:ReachableState = new ReachableState()
-  rs.name = "rs"+g.stateMap.size
   rs.symbolTable = cloneState
-  console.log("herer")
   if(!existingState){
-    console.log("here")
-    g.stateMap.set(newKey,rs)
-    todoList.push(rs)
-    rs.name = state.name + state.outGoingTransition.length || "rs"+g.stateMap.size
-    let rgt:RGTransition = new RGTransition ()
-    rgt.name = transition.name
-    rgt.target = rs
-    state.outGoingTransition.push(rgt)
+      g.stateMap.set(newKey,rs)
+      todoList.push(rs)
+      rs.name = state.name + state.outGoingTransition.length || "rs"+g.stateMap.size
+      let rgt:RGTransition = new RGTransition ()
+      rgt.name = transition.name
+      rgt.target = rs
+      state.outGoingTransition.push(rgt)
   }
-  else{
-    
-     // else add this transition into a old state 
+  else{ 
     let rgt:RGTransition = new RGTransition ()
     rgt.name = transition.name
     rgt.target = existingState
     state.outGoingTransition.push(rgt)
-    console.log("herer")
   }  
-  generatingGraphState(state,g,newKey,g.stateMap.size)
+  
 }
 
 function generatingHeraklitString(state:Map<string,Symbol>){
@@ -504,9 +500,7 @@ function generatingHeraklitString(state:Map<string,Symbol>){
   return fullText
 }
 
-function generatingGraphState(state:ReachableState,rg:ReachabilityGraph , key:string,i:number){
-  i=0
-  console.log(i++)
+function generatingGraphState(state:ReachableState){
   let dg = digraph('G')
   for(let elt of state.symbolTable.values()) {
     // const value = symbolTable.get(elt);
