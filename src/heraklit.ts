@@ -311,7 +311,7 @@ function computeAllState(startState:Map<string, Symbol>){
     todoList.splice(0,1)
     expandOneState(rg,todoList,currentState)
   }
-  for(let [stateKey,stateItem] of rg.stateMap){
+  for(let stateItem of rg.stateMap.values()){
     generatingGraphState(stateItem)
   }
   //show all state in image
@@ -328,8 +328,8 @@ function computeAllState(startState:Map<string, Symbol>){
       }) 
     }
  } 
- OperatorExec(rg)
  graphToImagePng(gr,'reachabilityGraph')
+ OperatorExec(rg)
 }
 
 function expandOneState(g:ReachabilityGraph,todoList:ReachableState[],state:ReachableState){
@@ -487,10 +487,7 @@ function generatingHeraklitString(state:Map<string,Symbol>){
         let line = `Equation( ${transition.name}, ${lineR} = ${lineV}  )`
         predicate.push(line)
         }
-        
-
       }
-
     }
   }
 
@@ -580,21 +577,27 @@ function graphToImagePng(g: any, imageName: string) {
 }
 
 function V1ShoesPredicate(state:ReachableState){
-  let places=[]; 
-  
   for(let elt of state.symbolTable.values()){
         if(elt._type === 'Place'){
-               places.push(elt)
+          console.log(elt._type)
+               if(elt.value.get("V1")||elt.value.get("shoes")){
+                let listValue =   elt.value
+                let listValueV1 = listValue.get("V1") as ValuePlace
+                let listValueShoes = listValue.get("shoes") as ValuePlace
+                  if(listValueV1.list){
+                    let listValueV1list:any[] = listValueV1?.list
+                    if(listValueV1list.includes("shoes")){
+                      return true
+                    }
+                  } 
+                  if(listValueShoes?.list){
+                    let listValueShoeslist:any[] = listValueShoes?.list
+                    if(listValueShoeslist.includes("V1")){
+                      return true
+                    }
+                  } 
+               }  
         }
-  }
-  for(const place of places) {
-    for(const item of place.value.values()){
-     let values  = item as ValuePlace
-    }
-    
-    // if(place.value.f(arr => (arr, ['V1', 'shoes'])) !== -1) {
-    //   return true
-    // }
   }
   return false
 }
