@@ -1,4 +1,4 @@
-import { Symbol } from "./heraklit"
+import { Symbol } from "./models"
 
 class RGTransition{
     name!:string

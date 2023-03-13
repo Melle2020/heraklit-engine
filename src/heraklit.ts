@@ -7,7 +7,7 @@ import BindingsList from './BindingsList';
 import _, { values } from "lodash";
 import { ReachabilityGraph, ReachableState, RGTransition } from './ReachabilityGraph';
 import { ExistFinallyOperator } from './operators/CTL'
-import test from 'node:test';
+import {Symbol,Transition,Flow,Association,definition,Params,Result,ValuePlace,TypeValue} from './models'
 
 
 
@@ -16,58 +16,22 @@ const dg = digraph('G')
 
 //Class system
 const symbolTable: Map<string, Symbol> = new Map();
-export class Symbol {
-  name!: string
-  _type!: string
-  value: Map<string, Symbol> = new Map()
-}
-
-
- export class Transition extends Symbol {
-  inFlows: Flow[] = []
-  outFlows: Flow[] = []
-  equations: Map<string, definition> = new Map()
-  valueAssociation: Map<string,Association> = new Map()
-}
-
-class Flow extends Symbol {
-  list: string[] = []
-}
-
-export class Association extends Symbol  {
-  params!: Params
-  result!: Result
-}
-
-class definition {
-  params!: Params
-  result!: Result
-}
-
-class Params {
-  list: string[] = []
-}
-
-class Result {
-  list: string[] = []
-}
-
-class ValuePlace extends Symbol {
-  list: string[] = []
-}
-class TypeValue extends Symbol {
-  declaration: Map<string, string[]> = new Map()
-}
 
 const lines = data.toString().replace(/\r\n/g, '\n').split('\n');
 
-setSymboleTableByReading(lines)
-addValueToSymbolTable(lines)
-getValueByKey(lines)
-graphCreated(symbolTable)
-readFnAssociation()
-computeAllState(symbolTable)
+HeraklitEngine()
 
+/**
+ * App initialised
+ */
+function HeraklitEngine(){
+  setSymboleTableByReading(lines)
+  addValueToSymbolTable(lines)
+  getValueByKey(lines)
+  graphCreated(symbolTable)
+  readFnAssociation()
+  computeAllState(symbolTable)
+}
 
 /**
  * This function Set all symbol transition and place in symbol table
@@ -686,7 +650,7 @@ function AliceShoesPredicate(state:ReachableState){
 }
 
 /**
- * 
+ * This function help to check if there are an existing path on ReachabilityGraph
  * @param rg 
  */
 function OperatorExec(rg:ReachabilityGraph){
