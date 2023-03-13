@@ -6,6 +6,12 @@ export class ExistFinallyOperator {
     todo:ReachableState[][] = [];
     done:ReachableState[] = []
 
+    /**
+     * 
+     * @param start 
+     * @param predicate 
+     * @returns 
+     */
     find(start:ReachableState,predicate:Function){
         let firstPath = []
         firstPath.push(start)
@@ -28,8 +34,8 @@ export class ExistFinallyOperator {
                    this.todo.push(nextPath);
                 }
             }
-        return false;
     }
+    return false;
 }
 
 }

@@ -68,7 +68,11 @@ graphCreated(symbolTable)
 readFnAssociation()
 computeAllState(symbolTable)
 
-//Set all symbol transition and place in symbol table
+
+/**
+ * This function Set all symbol transition and place in symbol table
+ * @param lines 
+ */
 function setSymboleTableByReading(lines: any) {
   for ( const line of lines ) {
     const openBracePos = line.indexOf('(');
@@ -93,7 +97,10 @@ function setSymboleTableByReading(lines: any) {
   }
 }
 
-//set value in symbol table by using flow . equation ,
+/**
+ * This function set value in symbol table by using flow . equation ,
+ * @param lines 
+ */
 function addValueToSymbolTable(lines: any) {
   let typeValue = new TypeValue()
   for ( const line of lines ) {
@@ -180,7 +187,10 @@ function addValueToSymbolTable(lines: any) {
     symbolTable.set('declaration', typeValue)
   }
 }
-
+/**
+ * 
+ * @param lines 
+ */
 function getValueByKey(lines: any) {
   for ( const line of lines ) {
     const tokensRegExp = /([\w-]+|\(|\)|\,)/g
@@ -209,7 +219,9 @@ function getValueByKey(lines: any) {
   }
   console.log(symbolTable)
 }
-
+/**
+ * 
+ */
 function readFnAssociation(){
   for ( let line of lines){
     const tokensRegExp = /([\w-]+|\(|\)|\,)|\=/g
@@ -247,6 +259,10 @@ function readFnAssociation(){
   }
 }
 
+/**
+ * 
+ * @param symbolTable 
+ */
 function graphCreated(symbolTable: any) {
   for ( let elt of symbolTable.keys() ) {
     const value = symbolTable.get(elt);
@@ -289,7 +305,10 @@ function graphCreated(symbolTable: any) {
 }
 
 
-
+/**
+ * 
+ * @param startState 
+ */
 function computeAllState(startState:Map<string, Symbol>){
   
   // Create Reachability graph
@@ -331,7 +350,13 @@ function computeAllState(startState:Map<string, Symbol>){
  graphToImagePng(gr,'reachabilityGraph')
  OperatorExec(rg)
 }
-
+ 
+/**
+ * 
+ * @param g 
+ * @param todoList 
+ * @param state 
+ */
 function expandOneState(g:ReachabilityGraph,todoList:ReachableState[],state:ReachableState){
   //for each transition 
   for(let s of state.symbolTable.keys()) {
@@ -363,6 +388,15 @@ function expandOneState(g:ReachabilityGraph,todoList:ReachableState[],state:Reac
   }
 }
 
+/**
+ * 
+ * @param g 
+ * @param todoList 
+ * @param state 
+ * @param currentBinding 
+ * @param transition 
+ * @returns 
+ */
 function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:ReachableState,currentBinding:Map<string,string>,transition:Transition){
   let cloneState = _.cloneDeep(state.symbolTable)
   //Execute the binding
@@ -426,6 +460,11 @@ function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:Reacha
   
 }
 
+/**
+ * This function generate a string using symbole table
+ * @param state 
+ * @returns 
+ */
 function generatingHeraklitString(state:Map<string,Symbol>){
   let predicate:string[]=[]
   for(let symbol of state.values()){
@@ -497,6 +536,10 @@ function generatingHeraklitString(state:Map<string,Symbol>){
   return fullText
 }
 
+/**
+ * This function a state to graphitz element
+ * @param state 
+ */
 function generatingGraphState(state:ReachableState){
   let dg = digraph('G')
   for(let elt of state.symbolTable.values()) {
@@ -560,7 +603,11 @@ async function writeOnFile(data: string, file: string) {
 
 }
 
-//convert dot file to png
+/**
+ * This function transform a graph to image
+ * @param g 
+ * @param imageName 
+ */
 function graphToImagePng(g: any, imageName: string) {
   const dot = toDot(g);
 
@@ -576,6 +623,11 @@ function graphToImagePng(g: any, imageName: string) {
   })();
 }
 
+/**
+ * This function is the predicate whose help to know if the are a place with V1 and Shoes together
+ * @param state 
+ * @returns 
+ */
 function V1ShoesPredicate(state:ReachableState){
   for(let elt of state.symbolTable.values()){
         if(elt._type === 'Place'){
@@ -602,9 +654,43 @@ function V1ShoesPredicate(state:ReachableState){
   return false
 }
 
+/**
+ * This function is the predicate whose help to know if the are a place with Bob and Shoes together
+ * @param state 
+ * @returns 
+ */
+function AliceShoesPredicate(state:ReachableState){
+  for(let elt of state.symbolTable.values()){
+        if(elt._type === 'Place'){
+          console.log(elt._type)
+               if(elt.value.get("Alice")||elt.value.get("shoes")){
+                let listValue =   elt.value
+                let listValueV1 = listValue.get("Alice") as ValuePlace
+                let listValueShoes = listValue.get("shoes") as ValuePlace
+                  if(listValueV1.list){
+                    let listValueV1list:any[] = listValueV1?.list
+                    if(listValueV1list.includes("shoes")){
+                      return true
+                    }
+                  } 
+                  if(listValueShoes?.list){
+                    let listValueShoeslist:any[] = listValueShoes?.list
+                    if(listValueShoeslist.includes("Alice")){
+                      return true
+                    }
+                  } 
+               }  
+        }
+  }
+  return false
+}
+
+/**
+ * 
+ * @param rg 
+ */
 function OperatorExec(rg:ReachabilityGraph){
     // init state
-    console.log(rg)
     let systemState!:ReachableState
     for(let g of rg.stateMap){
       if(g[1].name='startState'){
@@ -625,4 +711,18 @@ function OperatorExec(rg:ReachabilityGraph){
       else{
       console.log("NOT FOUND")
     }
+
+    if(ef.find(systemState,AliceShoesPredicate)) {
+      console.log("FOUND PATH:")
+      let path = ""
+      for(const state of ef.example) {
+        path += state.name + " -> "
+      }
+      path += "/"
+      console.log(path)
+      }
+      else{
+      console.log("NOT FOUND")
+    }
+
 }
