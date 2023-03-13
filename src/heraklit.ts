@@ -1,13 +1,13 @@
-import { attribute,digraph,toDot } from 'ts-graphviz';
+import { attribute, digraph, toDot } from 'ts-graphviz';
 import fs from "fs"
 import { CliRenderer } from "@diagrams-ts/graphviz-cli-renderer";
-import {promises as fsPromises } from 'fs';
+import { promises as fsPromises } from 'fs';
 import { join } from 'path';
 import BindingsList from './BindingsList';
 import _, { values } from "lodash";
 import { ReachabilityGraph, ReachableState, RGTransition } from './ReachabilityGraph';
 import { ExistFinallyOperator } from './operators/CTL'
-import {Symbol,Transition,Flow,Association,definition,Params,Result,ValuePlace,TypeValue} from './models'
+import { Symbol, Transition, Flow, Association, definition, Params, Result, ValuePlace, TypeValue } from './models'
 
 
 
@@ -24,7 +24,7 @@ HeraklitEngine()
 /**
  * App initialised
  */
-function HeraklitEngine(){
+function HeraklitEngine() {
   setSymboleTableByReading(lines)
   addValueToSymbolTable(lines)
   getValueByKey(lines)
@@ -38,7 +38,7 @@ function HeraklitEngine(){
  * @param lines 
  */
 function setSymboleTableByReading(lines: any) {
-  for ( const line of lines ) {
+  for (const line of lines) {
     const openBracePos = line.indexOf('(');
     const closeBracePos = line.indexOf(')');
     const relName = line.substring(0, openBracePos);
@@ -67,7 +67,7 @@ function setSymboleTableByReading(lines: any) {
  */
 function addValueToSymbolTable(lines: any) {
   let typeValue = new TypeValue()
-  for ( const line of lines ) {
+  for (const line of lines) {
     const tokensRegExp = /([\w-]+|\(|\)|\,|\=)/g
     const tokenList = line.match(tokensRegExp)
     if (line === '') {
@@ -129,10 +129,10 @@ function addValueToSymbolTable(lines: any) {
         keySymbol.equations.set(tokenList[j + 1], {
           params: params,
           result: result
-         }
+        }
         )
       }
-      else {}
+      else { }
     }
     else {
       for (let t of symbolTable.keys()) {
@@ -147,7 +147,7 @@ function addValueToSymbolTable(lines: any) {
       console.log(symbolTable)
     }
   }
-  if ( typeValue ) {
+  if (typeValue) {
     symbolTable.set('declaration', typeValue)
   }
 }
@@ -156,7 +156,7 @@ function addValueToSymbolTable(lines: any) {
  * @param lines 
  */
 function getValueByKey(lines: any) {
-  for ( const line of lines ) {
+  for (const line of lines) {
     const tokensRegExp = /([\w-]+|\(|\)|\,)/g
     const tokenList = line.match(tokensRegExp)
     const openBracePos = line.indexOf('(');
@@ -186,31 +186,31 @@ function getValueByKey(lines: any) {
 /**
  * 
  */
-function readFnAssociation(){
-  for ( let line of lines){
+function readFnAssociation() {
+  for (let line of lines) {
     const tokensRegExp = /([\w-]+|\(|\)|\,)|\=/g
-    const tokenList  = line.match(tokensRegExp) || []
+    const tokenList = line.match(tokensRegExp) || []
     const openBracePos = line.indexOf('(');
     const closeBracePos = line.indexOf(')');
     const relName = line.substring(0, openBracePos);
     const params = line.substring(openBracePos + 1, closeBracePos)
     const words: any[] = params.split(',')
 
-    if( relName === 'Place' || relName === 'Transition' || relName === 'Flow' || relName === 'Equation' ){
+    if (relName === 'Place' || relName === 'Transition' || relName === 'Flow' || relName === 'Equation') {
       continue;
     }
     let length = tokenList.length
-    if( length >= 6 && tokenList[1] === '(' && tokenList[3]  === ')'  && tokenList[4] === '=' ){
+    if (length >= 6 && tokenList[1] === '(' && tokenList[3] === ')' && tokenList[4] === '=') {
       let fn = symbolTable.get(relName)
-      if(!fn){
-        
+      if (!fn) {
+
         fn = new Symbol()
         fn.name = relName
         fn._type = 'Function'
-        symbolTable.set(relName,fn)
+        symbolTable.set(relName, fn)
 
       }
-      let association =  new Association()
+      let association = new Association()
       let paramsFn = new Params()
       let resultFn = new Result()
 
@@ -218,7 +218,7 @@ function readFnAssociation(){
       resultFn.list.push(tokenList[5])
       association.params = paramsFn
       association.result = resultFn
-      fn.value.set(tokenList[2],association)
+      fn.value.set(tokenList[2], association)
     }
   }
 }
@@ -228,7 +228,7 @@ function readFnAssociation(){
  * @param symbolTable 
  */
 function graphCreated(symbolTable: any) {
-  for ( let elt of symbolTable.keys() ) {
+  for (let elt of symbolTable.keys()) {
     const value = symbolTable.get(elt);
     if (value._type === 'Transition') {
       const node = dg.createNode(elt, {
@@ -244,18 +244,18 @@ function graphCreated(symbolTable: any) {
       })
     }
   }
-  for ( let elt of symbolTable.keys() ) {
+  for (let elt of symbolTable.keys()) {
     const value = symbolTable.get(elt);
-    if ( value._type === 'Transition' ) {
+    if (value._type === 'Transition') {
       let i = 1
-      for ( let item of value.inFlows ) {
+      for (let item of value.inFlows) {
         const srcVal = "{" + item.list.join(",") + "}"
         const node = dg.createEdge([item.value.get('src').name, elt], {
           [attribute.label]: srcVal
         })
         i++;
       }
-      for ( let item of value.outFlows ) {
+      for (let item of value.outFlows) {
         const tgtVal = "{" + item.list.join(",") + "}"
         const node = dg.createEdge([elt, item.value.get('tgt').name], {
           [attribute.label]: tgtVal
@@ -268,69 +268,67 @@ function graphCreated(symbolTable: any) {
 
 }
 
-
 /**
  * 
  * @param startState 
  */
-function computeAllState(startState:Map<string, Symbol>){
-  
+function computeAllState(startState: Map<string, Symbol>) {
+
   // Create Reachability graph
-  let rg:ReachabilityGraph = new ReachabilityGraph()
+  let rg: ReachabilityGraph = new ReachabilityGraph()
   let key = generatingHeraklitString(startState)
   // Add start state to Reachability graph
   let rc: ReachableState = new ReachableState()
   rc.name = "rs"
   rc.symbolTable = startState
-  rg.stateMap.set(key,rc)
+  rg.stateMap.set(key, rc)
   generatingGraphState(rc)
   // add  start state to todoList 
   let todoList: ReachableState[] = []
   todoList.push(rc)
-  let i=0
+  let i = 0
   // for each todoList entry expand one step
-  while(todoList.length > 0){
+  while (todoList.length > 0) {
     let currentState = todoList[0]
-    todoList.splice(0,1)
-    expandOneState(rg,todoList,currentState)
+    todoList.splice(0, 1)
+    expandOneState(rg, todoList, currentState)
   }
-  for(let stateItem of rg.stateMap.values()){
+  for (let stateItem of rg.stateMap.values()) {
     generatingGraphState(stateItem)
   }
   //show all state in image
-  let gr = digraph('RG') 
- for(let [key,elt] of rg.stateMap){
+  let gr = digraph('RG')
+  for (let [key, elt] of rg.stateMap) {
     let s = elt as ReachableState
-    let node = gr.createNode(s.name,{
-      [attribute.URL]: "./"+s.name+".svg",
-    }) 
-    for(let t of s.outGoingTransition){
-      let target =  t.target
-      let edge = gr.createEdge([s.name,target.name],{
+    let node = gr.createNode(s.name, {
+      [attribute.URL]: "./" + s.name + ".svg",
+    })
+    for (let t of s.outGoingTransition) {
+      let target = t.target
+      let edge = gr.createEdge([s.name, target.name], {
         [attribute.label]: t.name
-      }) 
+      })
     }
- } 
- graphToImagePng(gr,'reachabilityGraph')
- OperatorExec(rg)
+  }
+  graphToImagePng(gr, 'reachabilityGraph')
+  OperatorExec(rg)
 }
- 
+
 /**
  * 
  * @param g 
  * @param todoList 
  * @param state 
  */
-function expandOneState(g:ReachabilityGraph,todoList:ReachableState[],state:ReachableState){
+function expandOneState(g: ReachabilityGraph, todoList: ReachableState[], state: ReachableState) {
   //for each transition 
-  for(let s of state.symbolTable.keys()) {
+  for (let s of state.symbolTable.keys()) {
     const eSymbol = state.symbolTable.get(s) as Symbol
-    if(eSymbol._type === 'Transition') {
+    if (eSymbol._type === 'Transition') {
       let transitionBindings = new BindingsList()
       let trans: Transition;
       trans = eSymbol as Transition
-
-      for(let flow of trans.inFlows) {
+      for (let flow of trans.inFlows) {
         let place = flow.value.get('src') as Symbol
         let varList = flow.list
         let valueList = []
@@ -345,10 +343,10 @@ function expandOneState(g:ReachabilityGraph,todoList:ReachableState[],state:Reac
         transitionBindings.expandOut(varList, symbolTable, trans)
       }
       //for each binding
-      for( let b of transitionBindings.bindings){
-        doOneBinding(g,todoList,state,b,trans)
+      for (let b of transitionBindings.bindings) {
+        doOneBinding(g, todoList, state, b, trans)
       }
-    }   
+    }
   }
 }
 
@@ -361,40 +359,39 @@ function expandOneState(g:ReachabilityGraph,todoList:ReachableState[],state:Reac
  * @param transition 
  * @returns 
  */
-function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:ReachableState,currentBinding:Map<string,string>,transition:Transition){
+function doOneBinding(g: ReachabilityGraph, todoList: ReachableState[], state: ReachableState, currentBinding: Map<string, string>, transition: Transition) {
   let cloneState = _.cloneDeep(state.symbolTable)
   //Execute the binding
-  let cloneTransition:Transition|undefined = undefined
-  for(let symbol of cloneState.values()){
-    if(symbol.name === transition.name){
-       cloneTransition = symbol as Transition
-       break;
+  let cloneTransition: Transition | undefined = undefined
+  for (let symbol of cloneState.values()) {
+    if (symbol.name === transition.name) {
+      cloneTransition = symbol as Transition
+      break;
     }
   }
-  if(!cloneTransition ) {
+  if (!cloneTransition) {
     return
   }
-  for(let item of cloneTransition.inFlows){
+  for (let item of cloneTransition.inFlows) {
     let place = item.value.get('src') as ValuePlace
-    let tab:any[]=[]
-    for(let v of item.list){
+    let tab: any[] = []
+    for (let v of item.list) {
       tab.push(currentBinding.get(v))
-    }  
-    for(let obj of tab){
+    }
+    for (let obj of tab) {
       place.value.delete(obj)
     }
-     
   }
-  for(let item of cloneTransition.outFlows){
+  for (let item of cloneTransition.outFlows) {
     let vP = item.value.get('tgt') as ValuePlace
     let newOutput = new ValuePlace()
-    for ( let v of item.list ){
+    for (let v of item.list) {
       let valCurr = currentBinding.get(v) as string
-      newOutput.list.push(valCurr)   
-      newOutput.list.push(','  )
+      newOutput.list.push(valCurr)
+      newOutput.list.push(',')
     }
-    newOutput.list.splice(-1,1) 
-    vP.value.set(newOutput.list[0],newOutput)  
+    newOutput.list.splice(-1, 1)
+    vP.value.set(newOutput.list[0], newOutput)
   }
 
   //is it a new state?
@@ -404,24 +401,23 @@ function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:Reacha
 
   //If yes add it to the Reachability graph,add to the todoList, add transition edge (old state to new state )
   // if yes store into disk as image(png ,svg,..) and heraklit notation
-  let rs:ReachableState = new ReachableState()
+  let rs: ReachableState = new ReachableState()
   rs.symbolTable = cloneState
-  if(!existingState){
-      g.stateMap.set(newKey,rs)
-      todoList.push(rs)
-      rs.name = state.name + state.outGoingTransition.length || "rs"+g.stateMap.size
-      let rgt:RGTransition = new RGTransition ()
-      rgt.name = transition.name
-      rgt.target = rs
-      state.outGoingTransition.push(rgt)
+  if (!existingState) {
+    g.stateMap.set(newKey, rs)
+    todoList.push(rs)
+    rs.name = state.name + state.outGoingTransition.length || "rs" + g.stateMap.size
+    let rgt: RGTransition = new RGTransition()
+    rgt.name = transition.name
+    rgt.target = rs
+    state.outGoingTransition.push(rgt)
   }
-  else{ 
-    let rgt:RGTransition = new RGTransition ()
+  else {
+    let rgt: RGTransition = new RGTransition()
     rgt.name = transition.name
     rgt.target = existingState
     state.outGoingTransition.push(rgt)
-  }  
-  
+  }
 }
 
 /**
@@ -429,73 +425,71 @@ function doOneBinding(g:ReachabilityGraph,todoList:ReachableState[],state:Reacha
  * @param state 
  * @returns 
  */
-function generatingHeraklitString(state:Map<string,Symbol>){
-  let predicate:string[]=[]
-  for(let symbol of state.values()){
-    if( symbol._type === "Place"){
+function generatingHeraklitString(state: Map<string, Symbol>) {
+  let predicate: string[] = []
+  for (let symbol of state.values()) {
+    if (symbol._type === "Place") {
       let line = `Place( ${symbol.name} )`
       predicate.push(line)
-      for(let s of symbol.value.values()){
+      for (let s of symbol.value.values()) {
         let vp = s as ValuePlace
         line = `${symbol.name}( ${vp.list.join('')} )`
         predicate.push(line)
       }
     }
-    else if(symbol._type === "Transition"){
+    else if (symbol._type === "Transition") {
       let line = `Transition( ${symbol.name} )`
       predicate.push(line)
       let transition = symbol as Transition
-      if(transition.inFlows.length){        
-        for(let flow of transition.inFlows){
+      if (transition.inFlows.length) {
+        for (let flow of transition.inFlows) {
           let line = `${flow.value.get('src')?.name}, ${flow.value.get('tgt')?.name}, `
-          if(flow.list.length >= 0){
-              for(let variable of flow.list){
-                line+=`${variable}, `
-              }
+          if (flow.list.length >= 0) {
+            for (let variable of flow.list) {
+              line += `${variable}, `
+            }
           }
-          line =`Flow ( ${line})`
-          predicate.push(line)       
+          line = `Flow ( ${line})`
+          predicate.push(line)
 
         }
       }
-      if(transition.outFlows.length){
-        for(let flow of transition.outFlows){
+      if (transition.outFlows.length) {
+        for (let flow of transition.outFlows) {
           let line = `${flow.value.get('tgt')?.name}, ${flow.value.get('src')?.name}, `
-          if(flow.list.length >= 0){
-              for(let variable of flow.list){
-                line+=`${variable}, `
-              }
+          if (flow.list.length >= 0) {
+            for (let variable of flow.list) {
+              line += `${variable}, `
+            }
           }
-          line =`Flow ( ${line})`
-          predicate.push(line)       
+          line = `Flow ( ${line})`
+          predicate.push(line)
 
         }
       }
-      if(transition.equations){
-        for(let [k , v] of transition.equations){ 
+      if (transition.equations) {
+        for (let [k, v] of transition.equations) {
           let lineR = ""
           let lineV = ""
-          if(v.result.list.length >= 0){
+          if (v.result.list.length >= 0) {
             //check all result
-            for(let r of v.result.list ){
+            for (let r of v.result.list) {
               lineR += `${r}, `
             }
-            lineR = `( ${lineR} )`      
+            lineR = `( ${lineR} )`
             //check all param
-            for(let p of v.params.list ){
+            for (let p of v.params.list) {
               lineV += `${p}, `
             }
-            lineV = `f( ${lineV} )`      
+            lineV = `f( ${lineV} )`
           }
-        let line = `Equation( ${transition.name}, ${lineR} = ${lineV}  )`
-        predicate.push(line)
+          let line = `Equation( ${transition.name}, ${lineR} = ${lineV}  )`
+          predicate.push(line)
         }
       }
     }
   }
-
   predicate = predicate.sort()
-
   let fullText = predicate.join('\n')
   return fullText
 }
@@ -504,17 +498,17 @@ function generatingHeraklitString(state:Map<string,Symbol>){
  * This function a state to graphitz element
  * @param state 
  */
-function generatingGraphState(state:ReachableState){
+function generatingGraphState(state: ReachableState) {
   let dg = digraph('G')
-  for(let elt of state.symbolTable.values()) {
+  for (let elt of state.symbolTable.values()) {
     // const value = symbolTable.get(elt);
-    if(elt._type === 'Transition') {
+    if (elt._type === 'Transition') {
       const node = dg.createNode(elt.name, {
         [attribute.shape]: "box",
       })
-    } else if(elt._type === 'Place') {
+    } else if (elt._type === 'Place') {
       let key = ''
-      for(let v of elt.value.values()) {
+      for (let v of elt.value.values()) {
         let vp = v as ValuePlace
         key += '(' + vp.list.join('') + ') '
       }
@@ -523,47 +517,27 @@ function generatingGraphState(state:ReachableState){
       })
     }
   }
-  for ( let elt of state.symbolTable.values() ) {
-    if ( elt._type === 'Transition' ) {
+  for (let elt of state.symbolTable.values()) {
+    if (elt._type === 'Transition') {
       let transition = elt as Transition
-      for ( let item of transition.inFlows ) {
+      for (let item of transition.inFlows) {
         const srcVal = "{" + item.list.join(",") + "}"
-        const placeN:string = item.value?.get('src')?.name as string
-        const node = dg.createEdge([ placeN, transition.name], {
+        const placeN: string = item.value?.get('src')?.name as string
+        const node = dg.createEdge([placeN, transition.name], {
           [attribute.label]: srcVal
         })
       }
-      for ( let item of transition.outFlows ) {
+      for (let item of transition.outFlows) {
         const tgt = item.value.get('tgt')?.value.keys()
         const tgtVal = "{" + item.list.join(",") + "}"
-        const placeN:string = item.value?.get('tgt')?.name as string
+        const placeN: string = item.value?.get('tgt')?.name as string
         const node = dg.createEdge([transition.name, placeN], {
           [attribute.label]: tgtVal
         })
       }
     }
   }
-  graphToImagePng(dg,state.name)
-
-}
-
-async function writeOnFile(data: string, file: string) {
-  try {
-    await fsPromises.writeFile(join(__dirname, file), data, {
-      flag: 'w',
-    });
-
-    const contents = await fsPromises.readFile(
-      join(__dirname, file),
-      'utf-8',
-    );
-    console.log(contents);  
-
-    return contents;
-  } catch (err) {
-    console.log(err);
-    return 'Something went wrong';
-  }
+  graphToImagePng(dg, state.name)
 
 }
 
@@ -592,28 +566,28 @@ function graphToImagePng(g: any, imageName: string) {
  * @param state 
  * @returns 
  */
-function V1ShoesPredicate(state:ReachableState){
-  for(let elt of state.symbolTable.values()){
-        if(elt._type === 'Place'){
-          console.log(elt._type)
-               if(elt.value.get("V1")||elt.value.get("shoes")){
-                let listValue =   elt.value
-                let listValueV1 = listValue.get("V1") as ValuePlace
-                let listValueShoes = listValue.get("shoes") as ValuePlace
-                  if(listValueV1.list){
-                    let listValueV1list:any[] = listValueV1?.list
-                    if(listValueV1list.includes("shoes")){
-                      return true
-                    }
-                  } 
-                  if(listValueShoes?.list){
-                    let listValueShoeslist:any[] = listValueShoes?.list
-                    if(listValueShoeslist.includes("V1")){
-                      return true
-                    }
-                  } 
-               }  
+function V1ShoesPredicate(state: ReachableState) {
+  for (let elt of state.symbolTable.values()) {
+    if (elt._type === 'Place') {
+      console.log(elt._type)
+      if (elt.value.get("V1") || elt.value.get("shoes")) {
+        let listValue = elt.value
+        let listValueV1 = listValue.get("V1") as ValuePlace
+        let listValueShoes = listValue.get("shoes") as ValuePlace
+        if (listValueV1.list) {
+          let listValueV1list: any[] = listValueV1?.list
+          if (listValueV1list.includes("shoes")) {
+            return true
+          }
         }
+        if (listValueShoes?.list) {
+          let listValueShoeslist: any[] = listValueShoes?.list
+          if (listValueShoeslist.includes("V1")) {
+            return true
+          }
+        }
+      }
+    }
   }
   return false
 }
@@ -623,28 +597,28 @@ function V1ShoesPredicate(state:ReachableState){
  * @param state 
  * @returns 
  */
-function AliceShoesPredicate(state:ReachableState){
-  for(let elt of state.symbolTable.values()){
-        if(elt._type === 'Place'){
-          console.log(elt._type)
-               if(elt.value.get("Alice")||elt.value.get("shoes")){
-                let listValue =   elt.value
-                let listValueV1 = listValue.get("Alice") as ValuePlace
-                let listValueShoes = listValue.get("shoes") as ValuePlace
-                  if(listValueV1.list){
-                    let listValueV1list:any[] = listValueV1?.list
-                    if(listValueV1list.includes("shoes")){
-                      return true
-                    }
-                  } 
-                  if(listValueShoes?.list){
-                    let listValueShoeslist:any[] = listValueShoes?.list
-                    if(listValueShoeslist.includes("Alice")){
-                      return true
-                    }
-                  } 
-               }  
+function AliceShoesPredicate(state: ReachableState) {
+  for (let elt of state.symbolTable.values()) {
+    if (elt._type === 'Place') {
+      console.log(elt._type)
+      if (elt.value.get("Alice") || elt.value.get("shoes")) {
+        let listValue = elt.value
+        let listValueV1 = listValue.get("Alice") as ValuePlace
+        let listValueShoes = listValue.get("shoes") as ValuePlace
+        if (listValueV1.list) {
+          let listValueV1list: any[] = listValueV1?.list
+          if (listValueV1list.includes("shoes")) {
+            return true
+          }
         }
+        if (listValueShoes?.list) {
+          let listValueShoeslist: any[] = listValueShoes?.list
+          if (listValueShoeslist.includes("Alice")) {
+            return true
+          }
+        }
+      }
+    }
   }
   return false
 }
@@ -653,40 +627,40 @@ function AliceShoesPredicate(state:ReachableState){
  * This function help to check if there are an existing path on ReachabilityGraph
  * @param rg 
  */
-function OperatorExec(rg:ReachabilityGraph){
-    // init state
-    let systemState!:ReachableState
-    for(let g of rg.stateMap){
-      if(g[1].name='startState'){
-        systemState = g[1] as ReachableState
-        break;
-      }
+function OperatorExec(rg: ReachabilityGraph) {
+  // init state
+  let systemState!: ReachableState
+  for (let g of rg.stateMap) {
+    if (g[1].name = 'startState') {
+      systemState = g[1] as ReachableState
+      break;
     }
-    const ef = new ExistFinallyOperator()
-    if(ef.find(systemState, V1ShoesPredicate)) {
-      console.log("FOUND PATH:")
-      let path = ""
-      for(const state of ef.example) {
-        path += state.name + " -> "
-      }
-      path += "/"
-      console.log(path)
-      }
-      else{
-      console.log("NOT FOUND")
+  }
+  const ef = new ExistFinallyOperator()
+  if (ef.find(systemState, V1ShoesPredicate)) {
+    console.log("FOUND PATH:")
+    let path = ""
+    for (const state of ef.example) {
+      path += state.name + " -> "
     }
+    path += "/"
+    console.log(path)
+  }
+  else {
+    console.log("NOT FOUND")
+  }
 
-    if(ef.find(systemState,AliceShoesPredicate)) {
-      console.log("FOUND PATH:")
-      let path = ""
-      for(const state of ef.example) {
-        path += state.name + " -> "
-      }
-      path += "/"
-      console.log(path)
-      }
-      else{
-      console.log("NOT FOUND")
+  if (ef.find(systemState, AliceShoesPredicate)) {
+    console.log("FOUND PATH:")
+    let path = ""
+    for (const state of ef.example) {
+      path += state.name + " -> "
     }
+    path += "/"
+    console.log(path)
+  }
+  else {
+    console.log("NOT FOUND")
+  }
 
 }

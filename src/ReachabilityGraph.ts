@@ -13,7 +13,5 @@ class ReachableState{
 
 class ReachabilityGraph{
    stateMap:Map<string,ReachableState> = new Map()
-
- 
 }
 export  { ReachabilityGraph , ReachableState , RGTransition}
