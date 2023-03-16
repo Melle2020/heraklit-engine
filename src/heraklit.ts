@@ -11,7 +11,7 @@ import { Symbol, Transition, Flow, Association, definition, Params, Result, Valu
 
 
 
-const data = fs.readFileSync('src/data/G2.hera', 'utf8')
+const data = fs.readFileSync('src/data/fig10.hera', 'utf8')
 const dg = digraph('G')
 
 //Class system
@@ -105,6 +105,7 @@ function addValueToSymbolTable(lines: any) {
         for (let i = 6; i < tokenList.length; i = i + 2) {
           flow.list.push(tokenList[i])
         }
+        console.log(`${myTrans.inFlows}`)
         myTrans.inFlows.push(flow)
       }
 
@@ -549,7 +550,7 @@ function generatingGraphState(state: ReachableState) {
 function graphToImagePng(g: any, imageName: string) {
   const dot = toDot(g);
 
-  const render = CliRenderer({ outputFile: "src\\output\\" + imageName + ".svg", format: "svg" });
+  const render = CliRenderer({ outputFile: "src/output/" + imageName + ".svg", format: "svg" });
   (async () => {
     try {
       await render(

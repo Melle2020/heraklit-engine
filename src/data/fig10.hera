@@ -1,0 +1,68 @@
+f( shoes ) = 120Eur
+f( shirt ) = 50Eur
+
+p( shoes ) = packs-shoes
+p( shirt ) = packs-shirt
+
+v( shoes ) = voucher-shoes
+v( shirt ) = voucher-shirt
+
+Place( vendor-available )
+Place( client-with-item )
+Place( vendor-with-item )
+Place( client-with-money )
+Place( vendor-packed-item )
+Place( client-with-voucher )
+Place( finished-client )
+Place( vendor-available2 )
+
+
+Transition( item-take-home )
+Transition( vendor-packs-item )
+Transition( client-pays-take-home )
+Transition( hanging-hover )
+
+
+Flow( vendor-available, item-take-home, y )
+Flow( client-with-item, item-take-home, x, z )
+Flow( item-take-home,  vendor-with-item, y, z )
+Flow( item-take-home, client-with-money, x, m )
+
+Flow( vendor-with-item, vendor-packs-item, y, z )
+Flow( vendor-packs-item, vendor-packed-item, y, pz )
+
+Flow( client-with-money, client-pays-take-home , x, m )
+Flow( client-pays-take-home , client-with-voucher, x )
+
+Flow( vendor-packed-item, hanging-hover, y, pz )
+Flow( client-with-voucher, hanging-hover, x, vz )
+Flow( hanging-hover,  vendor-available2, y )
+Flow( hanging-hover, finished-client, x, pz )
+
+Equation( item-take-home, ( m ) = f( z ) )
+Equation( vendor-packs-item, ( pz ) = p( z ) )
+Equation( hanging-hover, ( vz ) = v( z ) )
+
+
+vendor( v1 )
+vendor( v2 )
+vendor-available( V1 )
+vendor-available( V2 )
+client( Alice )
+Item( shirt )
+Money( 50Eur )
+client( Bob )
+Item( shoes )
+Money( 120Eur )
+pack-item( packs-shoes )
+pack-item( packs-shirt )
+voucher-item( voucher-shoes )
+voucher-item( voucher-shirt )
+
+client-with-item( Alice, shirt )
+client-with-item( Bob, shoes )
+
+
+
+
+
