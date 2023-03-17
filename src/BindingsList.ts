@@ -1,4 +1,4 @@
-import { Association, Symbol, Transition } from "./models"
+import { Association, Symbol, Transition } from "./models/models"
 
 class BindingsList{
     bindings:Map<string,string>[]=[]

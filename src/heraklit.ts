@@ -1,13 +1,11 @@
 import { attribute, digraph, toDot } from 'ts-graphviz';
 import fs from "fs"
 import { CliRenderer } from "@diagrams-ts/graphviz-cli-renderer";
-import { promises as fsPromises } from 'fs';
-import { join } from 'path';
 import BindingsList from './BindingsList';
 import _, { values } from "lodash";
-import { ReachabilityGraph, ReachableState, RGTransition } from './ReachabilityGraph';
+import { ReachabilityGraph, ReachableState, RGTransition } from './models/ReachabilityGraph';
 import { ExistFinallyOperator } from './operators/CTL'
-import { Symbol, Transition, Flow, Association, definition, Params, Result, ValuePlace, TypeValue } from './models'
+import { Symbol, Transition, Flow, Association, definition, Params, Result, ValuePlace, TypeValue } from './models/models'
 
 
 

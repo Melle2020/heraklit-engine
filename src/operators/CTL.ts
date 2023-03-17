@@ -1,4 +1,4 @@
-import { ReachableState } from "../ReachabilityGraph";
+import { ReachableState } from "../models/ReachabilityGraph";
 
 export class ExistFinallyOperator {
 
