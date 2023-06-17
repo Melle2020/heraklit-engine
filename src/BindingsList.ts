@@ -8,16 +8,12 @@ class BindingsList{
             for(const v of valueList){
                 const newMap : Map<string,string>=new Map()
                 for(let i=0 ; i< varName.length ; i++){
-
                   let  vn = varName[i]
                   let  vi = v[2*i]
                   if(vi===','){
                     console.log('Error')
                   }
-                  
                   newMap.set(vn,vi)
-
-
                 }
                 // newMap.set(varName,v)
                 this.bindings.push(newMap)
@@ -29,17 +25,12 @@ class BindingsList{
                 for(const v of valueList){
                     const newMap = new Map(oldMap) 
                     for(let i=0 ; i< varName.length ; i++){
-    
                       let  vn = varName[i]
                       let  vi = v[2*i]
                       newMap.set(vn,vi)
-    
-    
                     }
-                    // newMap.set(varName,v)
                     this.bindings.push(newMap)
                 }
-
             }
         }
     }
@@ -65,21 +56,14 @@ class BindingsList{
                         }
                         try {
                             let resultValue = ass.result.list[0]
-                            console.log(resultValue)
                             oldMap.set(vn,resultValue)
                         } catch (error) {
                            console.log(error) 
                         }
-                        
-                        
-                        
                     }
                 }
-                console.log('t')
             }
         }
-
-
     }
 
     printBindingList(){
@@ -88,7 +72,6 @@ class BindingsList{
             for ( let k of elt.keys()){
                 line+= k + ' ' + elt.get(k) +',' + ''
             }
-            console.log(line)
         }
     }
 }
